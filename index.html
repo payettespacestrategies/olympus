@@ -107,6 +107,13 @@ body.hide-prev .asm-cell .col2 small:first-child{display:none}
 
 /* Program tab editable */
 .prog-cat{margin-bottom:14px;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.prog-cat.dragging{opacity:0.4}
+.prog-cat.cat-drag-over-top{box-shadow:inset 0 3px 0 0 var(--accent)}
+.prog-cat.cat-drag-over-bottom{box-shadow:inset 0 -3px 0 0 var(--accent)}
+.prog-cat.cat-row-drop-target{outline:2px dashed var(--accent);outline-offset:-2px}
+.cat-drag-handle{cursor:grab;color:#1F2A4499;font-size:14px;line-height:1;padding:0 2px;user-select:none}
+.cat-drag-handle:hover{color:#1F2A44}
+.cat-drag-handle:active{cursor:grabbing}
 .prog-cat-head{padding:8px 12px;display:flex;align-items:center;gap:8px;font-weight:800}
 .prog-cat-head .nasf-total{margin-left:auto;font-size:13px;font-weight:900;background:#FFF;padding:2px 10px;border-radius:10px;border:1px solid #1F2A4422}
 .prog-cat-head button{padding:3px 10px;font-size:11px;border:1px solid #1F2A4444;background:#fff;border-radius:3px;cursor:pointer}
@@ -269,6 +276,27 @@ body.hide-prev .asm-cell .col2 small:first-child{display:none}
   .tabs button{display:none}.tabs button.on{display:inline-block}
   .bldgbar,.tools{display:none}
   body{background:#fff}.card,.asm-sect{break-inside:avoid;page-break-inside:avoid}
+
+  /* Without this, browsers strip all background colors when printing by default
+     (independent of any "print background graphics" checkbox in some browsers) —
+     this is why category headers and FICM swatches were showing up blank/white. */
+  *{
+    -webkit-print-color-adjust:exact !important;
+    print-color-adjust:exact !important;
+    color-adjust:exact !important;
+  }
+
+  /* Dropdowns aren't interactive on paper, so drop the native arrow/chrome and
+     just show clean bordered text — avoids inconsistent native widget rendering
+     across browsers/OSes when printed. */
+  select{
+    -webkit-appearance:none;
+    appearance:none;
+    background-image:none !important;
+    padding-right:6px !important;
+  }
+  .prog-cat-head{break-inside:avoid;page-break-inside:avoid}
+  .prog-tbl tr{break-inside:avoid;page-break-inside:avoid}
 }
 
 /* Room size classification column */
@@ -281,6 +309,7 @@ body.hide-prev .asm-cell .col2 small:first-child{display:none}
 
 /* Aspect ratio column */
 .prog-tbl th.col-aspect, .prog-tbl td.col-aspect{width:60px;text-align:center}
+.prog-tbl th.col-height, .prog-tbl td.col-height{width:70px;text-align:center}
 .aspect-inp{width:52px;font-size:11px;border:1px solid #ccd2dc;padding:2px 4px;border-radius:3px;text-align:center;font-family:inherit;font-variant-numeric:tabular-nums}
 .aspect-inp:focus{outline:1px solid var(--accent);background:#FFFCE6}
 
@@ -354,7 +383,7 @@ body.hide-prev .asm-cell .col2 small:first-child{display:none}
 // ====================================================================
 // INITIAL STATE
 // ====================================================================
-var S = {"project":{"name":"RUSM Barbados Preclinical Campus","client":"Adtalem / Ross University School of Medicine","location":"Barbados","version":"v6.1 · 2026-06-09","generated":"2026-06-09"},"assumptions":{"students":{"current":2500,"previous":1400},"cohort_sept_ratio":{"current":1,"previous":1},"cohort_jan_ratio":{"current":0.7,"previous":0.5},"cohort_may_ratio":{"current":0.4,"previous":0.4},"classroom_seats":{"current":200,"previous":350},"classroom_sf_per_seat":{"current":22,"previous":22},"housing_ratio":{"current":0.2,"previous":0.21},"dorm_beds":{"current":500,"previous":300},"apartments":{"current":25,"previous":0},"apartment_bedrooms":{"current":4,"previous":4},"parking_ratio":{"current":0.2,"previous":0.21},"parking_spots":{"current":600,"previous":300},"parking_sf_per_car":{"current":350,"previous":350},"clinic_sf":{"current":15000,"previous":15000},"faculty_ratio_denom":{"current":14,"previous":15},"n_g_ratio":{"current":0.7,"previous":0.55},"escalation_factor":{"current":1.104,"previous":1},"soft_cost_mult":{"current":1.3,"previous":1.3}},"buildings":{"academic":{"name":"Academic Building","nasf":507240,"ng":0.62,"gsf":724629},"clinic":{"name":"Outpatient Clinic","nasf":7630,"ng":0.48780487804878053,"gsf":15641},"residence":{"name":"Student Residence","nasf":210730,"ng":0.6666666666666666,"gsf":316095}},"academic_categories":[{"name":"Small Group & Collaborative","rooms":[{"name":"PBL Room (8-person)","people":8,"seats":8,"qty":60,"size":250,"nasf":13250,"notes":"Cohort-clustered + after-hours study.","id":"smallgrp_0","ficm":"3d","comfort":"","circulation":"","pav_qty":{"P3":30},"aspect_ratio":1.75},{"name":"Seminar Room (24-seat)","people":24,"seats":24,"qty":12,"size":600,"nasf":6600,"notes":"Faculty-led case discussion","id":"smallgrp_1","ficm":"3d","comfort":"","circulation":"","pav_qty":{"P3":6},"aspect_ratio":1.5},{"id":"new_1779815807519","name":"ADDITIONAL BUILD-OUT","qty":1,"size":0,"seats":null,"people":null,"notes":"","ficm":"3d","comfort":"","circulation":"","aspect_ratio":1.5}],"subgroups":["PBL Rooms","Seminar & Flex"],"color_key":"smallgrp","color":"#b9f8db","pavilion":"P3","nasf_total":22200},{"name":"Learning — Lecture & TBL Rooms","rooms":[{"name":"TBL Classroom — 200 seats","people":1800,"seats":200,"qty":9,"size":4400,"nasf":26400,"notes":"200 seats x 22 SF/seat; flat-floor with operable partitions to neighbors. Two-ro","id":"lecture_0","ficm":"2c","comfort":"","circulation":"","pav_qty":{"P1":9},"aspect_ratio":1.75},{"name":"Active Learning Studio (50-seat)","people":400,"seats":50,"qty":6,"size":1200,"nasf":4800,"notes":"50-seat flat-floor flex room. TBL workshop sub-groups, mock OSCE staging, small-","id":"lecture_1","ficm":"2c","comfort":"","circulation":"","pav_qty":{"P1":6},"aspect_ratio":1.75},{"id":"new_1778605950104","name":"Computer/Testing Labs","qty":2,"size":2800,"seats":80,"people":160,"notes":"Dedicated testing rooms, staffed","ficm":"2c","comfort":"","circulation":"","pav_qty":{"P1":2},"aspect_ratio":1.75},{"id":"new_1778607160848","name":"Enhanced Active Learning Studio","qty":2,"size":1200,"seats":25,"people":50,"notes":"","ficm":"2c","comfort":"","circulation":"","pav_qty":{"P1":2},"aspect_ratio":1.75},{"id":"new_1779815673639","name":"ADDITIONAL BUILD-OUT","qty":1,"size":0,"seats":null,"people":null,"notes":"","ficm":"2c","comfort":"","circulation":"","aspect_ratio":1.75}],"subgroups":["Flat-Floor TBL Rooms (Option B — Primary)","Active Learning Support"],"color_key":"lecture","color":"#82ddb3","pavilion":"P1","nasf_total":54800},{"name":"Anatomy & Science Labs","rooms":[{"name":"Digital Anatomy Lab (Anatomage)","people":145,"seats":145,"qty":2,"size":3000,"nasf":7000,"notes":"2 labs × 72 Anatomage tables. doubles.","id":"anatomy_0","ficm":"2b","comfort":"","circulation":"","pav_qty":{"P2":2},"aspect_ratio":1.5},{"name":"Anatomy Support (storage, prep)","people":null,"seats":null,"qty":1,"size":1500,"nasf":1500,"notes":"Specimens, Anatomage server, prep","id":"anatomy_1","ficm":"2b","comfort":"","circulation":"","pav_qty":{"P2":1},"aspect_ratio":2},{"name":"Histology / Multi-Use Science Lab","people":80,"seats":80,"qty":2,"size":2800,"nasf":6400,"notes":"split into 2 for parallel use","id":"anatomy_2","ficm":"2b","comfort":"","circulation":"","pav_qty":{"P2":2},"aspect_ratio":1.5},{"name":"Lab Prep / Storage","people":null,"seats":null,"qty":1,"size":1200,"nasf":1200,"notes":"Slide library, microscope storage","id":"anatomy_3","ficm":"2b","comfort":"","circulation":"","pav_qty":{"P2":1},"aspect_ratio":2},{"id":"new_1779815779872","name":"ADDITIONAL BUILD-OUT","qty":1,"size":0,"seats":null,"people":null,"notes":"","ficm":"2b","comfort":"","circulation":"","aspect_ratio":1.5}],"subgroups":["Digital Anatomy Lab","Histology & Science Lab"],"color_key":"anatomy","color":"#39946a","pavilion":"P2","nasf_total":14300},{"name":"Clinical Skills & Simulation","rooms":[{"name":"SP Exam Room (12-station equiv.)","people":4,"seats":4,"qty":60,"size":120,"nasf":6360,"notes":"Round-robin OSCE.","id":"simulation_0","ficm":"5b","comfort":"","circulation":"","pav_qty":{"P2":60},"aspect_ratio":1.5},{"name":"SP Lounge & Changing","people":null,"seats":null,"qty":2,"size":700,"nasf":1400,"notes":"Lockers, waiting, makeup, costume staging","id":"simulation_1","ficm":"5b","comfort":"","circulation":"","pav_qty":{"P2":2},"aspect_ratio":2},{"name":"Control / Observation Suite","people":null,"seats":null,"qty":1,"size":1000,"nasf":3000,"notes":"Central monitoring; multi-camera observation","id":"simulation_2","ficm":"5b","comfort":"","circulation":"","pav_qty":{"P2":1},"aspect_ratio":2},{"name":"Simulation Suite (high-fidelity)","people":8,"seats":8,"qty":8,"size":600,"nasf":2400,"notes":"","id":"simulation_4","ficm":"5b","comfort":"","circulation":"","pav_qty":{"P2":8},"aspect_ratio":1.5},{"name":"Sim Control Room","people":null,"seats":null,"qty":8,"size":150,"nasf":600,"notes":"1:2 with sim suite","id":"simulation_5","ficm":"5b","comfort":"","circulation":"","pav_qty":{"P2":8},"aspect_ratio":2},{"name":"Debriefing Rooms (12-seat)","people":12,"seats":12,"qty":12,"size":300,"nasf":6300,"notes":"Video playback; after-hours study","id":"simulation_6","ficm":"5b","comfort":"","circulation":"","pav_qty":{"P2":12},"aspect_ratio":1.5},{"id":"new_1778608149627","name":"SP/Sim Commons","qty":1,"size":2000,"seats":null,"people":null,"notes":"","ficm":"5b","comfort":"","circulation":"","pav_qty":{"P2":1},"aspect_ratio":2},{"name":"Clinical Skills Lab (24-learner)","people":24,"seats":24,"qty":6,"size":1600,"nasf":11200,"notes":"168 simultaneous skills capacity; potential for 48 person rooms","id":"simulation_3","ficm":"5b","comfort":"","circulation":"","pav_qty":{"P2":6},"aspect_ratio":1.75},{"id":"new_1779816019747","name":"ADDITIONAL BUILD-OUT","qty":1,"size":0,"seats":null,"people":null,"notes":"","ficm":"5b","comfort":"","circulation":"","aspect_ratio":1.5}],"subgroups":["Standardized Patient (SP) Suite","Clinical Skills Labs","High-Fidelity Simulation"],"color_key":"simulation","color":"#1b543a","pavilion":"P2","nasf_total":30800},{"name":"Student Learning & Amenities","rooms":[{"name":"Main Commons 1","people":400,"seats":650,"qty":1,"size":7500,"nasf":12800,"notes":"0.25 seats per student / 30sf per seat","id":"amenities_0","ficm":"3e","comfort":"","circulation":"","pav_qty":{"P4":1},"aspect_ratio":1.75},{"id":"new_1780080818346","name":"Main Commons 2","qty":1,"size":4000,"seats":null,"people":null,"notes":"","ficm":"3e","comfort":"","circulation":""},{"id":"new_1780080819186","name":"Main Commons 3","qty":1,"size":4000,"seats":null,"people":null,"notes":"","ficm":"3e","comfort":"","circulation":""},{"id":"new_1780080819442","name":"Main Commons 4","qty":1,"size":4000,"seats":null,"people":null,"notes":"","ficm":"3e","comfort":"","circulation":""},{"name":"Lockers / Bag Storage","people":null,"seats":null,"qty":4,"size":1000,"nasf":2640,"notes":"","id":"amenities_7","ficm":"3e","comfort":"","circulation":"","pav_qty":{"P4":2},"aspect_ratio":2},{"name":"Wellness Suite","people":null,"seats":null,"qty":4,"size":1500,"nasf":3600,"notes":"","id":"amenities_5","ficm":"3e","comfort":"","circulation":"","pav_qty":{"P4":3},"aspect_ratio":1.5},{"name":"Student Organization Office","people":null,"seats":null,"qty":1,"size":2000,"nasf":2100,"notes":"","id":"amenities_6","ficm":"3e","comfort":"","circulation":"","pav_qty":{"P4":1},"aspect_ratio":2},{"id":"new_1778604243512","name":"Gym","qty":1,"size":9000,"seats":null,"people":null,"notes":"","ficm":"3e","comfort":"","circulation":"","pav_qty":{"P4":1},"aspect_ratio":1.25},{"name":"Quiet Study 1","people":400,"seats":400,"qty":1,"size":5000,"nasf":19360,"notes":"0.3 seats per student / 30sf per seat","id":"amenities_2","ficm":"3e","comfort":"","circulation":"","pav_qty":{"P4":1},"aspect_ratio":1.75},{"id":"new_1780080909510","name":"Quiet Study 2","qty":1,"size":3000,"seats":null,"people":null,"notes":"","ficm":"3e","comfort":"","circulation":""},{"id":"new_1780080910132","name":"Quiet Study 3","qty":1,"size":3000,"seats":null,"people":null,"notes":"","ficm":"3e","comfort":"","circulation":""},{"id":"new_1780080910388","name":"Quiet Study 4","qty":1,"size":3000,"seats":null,"people":null,"notes":"","ficm":"3e","comfort":"","circulation":""},{"name":"Group Study Rooms (6-8 person)","people":8,"seats":8,"qty":20,"size":200,"nasf":3600,"notes":"Separate inventory for after-hours flex","id":"amenities_3","ficm":"3e","comfort":"","circulation":"","pav_qty":{"P4":12},"aspect_ratio":1.5},{"id":"new_1779216508206","name":"Library","qty":1,"size":8000,"seats":null,"people":null,"notes":"","ficm":"3e","comfort":"","circulation":"","pav_qty":{"P4":1},"aspect_ratio":2},{"id":"new_1778605234430","name":"Reading Room","qty":1,"size":4500,"seats":150,"people":150,"notes":"","ficm":"3e","comfort":"","circulation":"","pav_qty":{"P4":1},"aspect_ratio":1.5},{"name":"Café / Servery","people":100,"seats":100,"qty":2,"size":2500,"nasf":2200,"notes":"Light food service","id":"amenities_1","ficm":"3e","comfort":"","circulation":"","pav_qty":{"P4":2},"aspect_ratio":2},{"id":"new_1779816310216","name":"ADDITIONAL BUILD-OUT Study","qty":1,"size":0,"seats":null,"people":null,"notes":"","ficm":"3e","comfort":"","circulation":"","aspect_ratio":1.5},{"id":"new_1779816350972","name":"ADDITIONAL BUILD-OUT Recreation","qty":1,"size":0,"seats":null,"people":null,"notes":"","ficm":"3e","comfort":"","circulation":"","aspect_ratio":1.5},{"id":"new_1779816986709","name":"ADDITIONAL BUILD-OUT Cafe","qty":1,"size":0,"seats":null,"people":null,"notes":"","ficm":"3e","comfort":"","circulation":"","aspect_ratio":1.5}],"subgroups":["Commons & Lounge","Quiet Study","Wellness & Student Org","Entry & Vestibule"],"color_key":"amenities","color":"#ffc838","pavilion":"P4","nasf_total":76000},{"name":"Faculty & Academic Offices","rooms":[{"name":"Private Faculty Office","people":1,"seats":null,"qty":150,"size":120,"nasf":15000,"notes":"Concept board ratio TBD.","id":"faculty_0","ficm":"1b","comfort":"","circulation":"","pav_qty":{"P3":75},"aspect_ratio":1.5},{"name":"Department Chair Office","people":1,"seats":null,"qty":16,"size":180,"nasf":2520,"notes":"","id":"faculty_1","ficm":"1b","comfort":"","circulation":"","pav_qty":{"P3":8},"aspect_ratio":1.75},{"name":"Hoteling Workstations (open)","people":1,"seats":null,"qty":25,"size":80,"nasf":1680,"notes":"","id":"faculty_2","ficm":"1b","comfort":"","circulation":"","pav_qty":{"P3":10},"aspect_ratio":1.5},{"name":"Faculty Conference Room","people":14,"seats":14,"qty":8,"size":400,"nasf":2800,"notes":"","id":"faculty_3","ficm":"1b","comfort":"","circulation":"","pav_qty":{"P3":8},"aspect_ratio":1.75},{"name":"Faculty Lounge","people":null,"seats":null,"qty":2,"size":800,"nasf":800,"notes":"Single shared","id":"faculty_4","ficm":"1b","comfort":"","circulation":"","pav_qty":{"P3":2},"aspect_ratio":2},{"id":"new_1779817113815","name":"ADDITIONAL BUILD-OUT","qty":1,"size":0,"seats":null,"people":null,"notes":"","ficm":"1b","comfort":"","circulation":"","aspect_ratio":1.5}],"subgroups":["Faculty Offices","Faculty Conference & Lounge"],"color_key":"faculty","color":"#B6CDEF","pavilion":"P3","nasf_total":27680},{"name":"Administration","rooms":[{"name":"Dean's Suite","people":6,"seats":null,"qty":1,"size":1600,"nasf":1200,"notes":"Dean + 5 reports","id":"admin_0","ficm":"1a","comfort":"","circulation":"","pav_qty":{"P5":1},"aspect_ratio":1.5},{"name":"Office of Medical Education (OME)","people":12,"seats":null,"qty":1,"size":1000,"nasf":2400,"notes":"Curriculum + assessment","id":"admin_1","ficm":"1a","comfort":"","circulation":"","pav_qty":{"P5":1},"aspect_ratio":1.5},{"name":"Student Affairs","people":10,"seats":null,"qty":1,"size":2000,"nasf":2000,"notes":"Advising, counseling intake, financial aid","id":"admin_2","ficm":"1a","comfort":"","circulation":"","pav_qty":{"P5":1},"aspect_ratio":1.5},{"name":"Registrar / Records","people":4,"seats":null,"qty":1,"size":1000,"nasf":800,"notes":"Semi-fixed admin","id":"admin_3","ficm":"1a","comfort":"","circulation":"","pav_qty":{"P5":1},"aspect_ratio":1.5},{"name":"Board Room","people":24,"seats":24,"qty":1,"size":960,"nasf":800,"notes":"Curriculum committee, accreditation","id":"admin_4","ficm":"1a","comfort":"","circulation":"","pav_qty":{"P5":1},"aspect_ratio":1.5},{"id":"new_1778608652382","name":"Education Administration","qty":1,"size":2000,"seats":null,"people":null,"notes":"","ficm":"1a","comfort":"","circulation":"","pav_qty":{"P5":1},"aspect_ratio":1.5},{"id":"new_1778608762582","name":"Undefined Additional Admin","qty":1,"size":20000,"seats":null,"people":null,"notes":"","ficm":"1a","comfort":"","circulation":"","pav_qty":{"P5":1},"aspect_ratio":1.5},{"id":"new_1779817207741","name":"ADDITIONAL BUILD-OUT","qty":1,"size":0,"seats":null,"people":null,"notes":"","ficm":"1a","comfort":"","circulation":"","aspect_ratio":1.5}],"subgroups":["Administration"],"color_key":"admin","color":"#98ACE5","pavilion":"P5","nasf_total":28560},{"name":"IT & AV","rooms":[{"name":"Server / Telecom Room","people":null,"seats":null,"qty":3,"size":500,"nasf":800,"notes":"Primary + redundant","id":"itav_0","ficm":"6a","comfort":"","circulation":"","pav_qty":{"P5":4},"aspect_ratio":2},{"name":"AV Studio (lecture capture)","people":null,"seats":null,"qty":1,"size":1200,"nasf":1200,"notes":"Hybrid model recording","id":"itav_1","ficm":"6a","comfort":"","circulation":"","pav_qty":{"P5":1},"aspect_ratio":2},{"name":"IT Help Desk + Offices","people":10,"seats":null,"qty":1,"size":1800,"nasf":1600,"notes":"","id":"itav_2","ficm":"6a","comfort":"","circulation":"","pav_qty":{"P5":1},"aspect_ratio":2},{"name":"AV Storage / Repair","people":null,"seats":null,"qty":4,"size":250,"nasf":400,"notes":"Cart storage, spares","id":"itav_3","ficm":"6a","comfort":"","circulation":"","pav_qty":{"P5":2},"aspect_ratio":2}],"subgroups":["Technology"],"color_key":"itav","color":"#C2C3C8","pavilion":"P5","nasf_total":5500},{"name":"Building Support","rooms":[{"name":"Loading Dock / Receiving","people":null,"seats":null,"qty":1,"size":2000,"nasf":1500,"notes":"Single dock","id":"support_0","ficm":"6a","comfort":"","circulation":"","pav_qty":{"P5":1},"aspect_ratio":3},{"name":"Custodial Closets (per floor)","people":null,"seats":null,"qty":10,"size":100,"nasf":500,"notes":"1 per floor","id":"support_2","ficm":"6a","comfort":"","circulation":"","pav_qty":{"P5":10},"aspect_ratio":2},{"name":"Security Office","people":4,"seats":null,"qty":2,"size":600,"nasf":600,"notes":"Campus-wide node","id":"support_4","ficm":"6a","comfort":"","circulation":"","pav_qty":{"P5":2},"aspect_ratio":2},{"name":"Mail / Print Room","people":null,"seats":null,"qty":2,"size":600,"nasf":400,"notes":"Centralized","id":"support_5","ficm":"6a","comfort":"","circulation":"","pav_qty":{"P5":2},"aspect_ratio":2},{"id":"new_1779818391365","name":"ADDITIONAL BUILD-OUT","qty":1,"size":0,"seats":null,"people":null,"notes":"","ficm":"6a","comfort":"","circulation":"","aspect_ratio":2}],"subgroups":["Building Operations"],"color_key":"support","color":"#C2C3C8","pavilion":"P5","nasf_total":5400},{"name":"Site/Campus Support","color":"#E3E6EC","color_key":"support","pavilion":"P5","nasf_total":32000,"rooms":[{"id":"new_1778611295171","name":"Site Maintenance and Operations Building","qty":1,"size":8000,"seats":null,"people":null,"notes":"","ficm":"6a","comfort":"","circulation":"","pav_qty":{"P5":1},"aspect_ratio":2},{"id":"new_1780080366606","name":"Bulk Storage","qty":1,"size":5000,"seats":null,"people":null,"notes":"","ficm":"6a","comfort":"","circulation":""},{"id":"new_1778611326438","name":"Campus Operations / Staff","qty":1,"size":4000,"seats":null,"people":null,"notes":"","ficm":"6a","comfort":"","circulation":"","pav_qty":{"P5":1},"aspect_ratio":2},{"id":"new_1778615020979","name":"Undefined Additional Support","qty":1,"size":10000,"seats":null,"people":null,"notes":"","ficm":"6a","comfort":"","circulation":"","pav_qty":{"P5":1},"aspect_ratio":2},{"id":"new_1780080315276","name":"Central Plant","qty":1,"size":5000,"seats":null,"people":null,"notes":"","ficm":"6a","comfort":"","circulation":""}]},{"name":"HOUSING FOR PAVILIONS-TEST","color":"#ff833c","color_key":"support","pavilion":"P5","nasf_total":210000,"rooms":[{"id":"new_1780419652049","name":"HOUSING BLOCK","qty":500,"size":420,"seats":null,"people":null,"notes":"","ficm":"6a","comfort":"","circulation":""}]}],"clinic_categories":[{"code":"C1","name":"Exam & Consultation","color":"#96EBF6","nasf":2230,"rooms":[{"name":"General Exam","qty":16,"size":120,"seats":1,"nasf":1680,"cost_per_gsf":750},{"name":"Consultation","qty":1,"size":150,"seats":2,"nasf":150,"cost_per_gsf":700},{"name":"Triage Bays","qty":2,"size":80,"seats":1,"nasf":160,"cost_per_gsf":600}]},{"code":"C2","name":"Diagnostics","color":"#B6CDEF","nasf":1090,"rooms":[{"name":"POC Lab","qty":1,"size":300,"seats":0,"nasf":300,"cost_per_gsf":850},{"name":"Basic Imaging","qty":1,"size":400,"seats":0,"nasf":400,"cost_per_gsf":950},{"name":"Specimen Collection","qty":1,"size":120,"seats":1,"nasf":120,"cost_per_gsf":700},{"name":"Pharmacy","qty":1,"size":270,"seats":0,"nasf":270,"cost_per_gsf":800}]},{"code":"C3","name":"Urgent Care","color":"#52D1ED","nasf":930,"rooms":[{"name":"UC Entry/Triage","qty":1,"size":200,"seats":0,"nasf":200,"cost_per_gsf":650},{"name":"Exam Bays","qty":4,"size":120,"seats":1,"nasf":480,"cost_per_gsf":750},{"name":"Procedure Bay","qty":1,"size":250,"seats":1,"nasf":250,"cost_per_gsf":850}]},{"code":"C4","name":"Patient Support","color":"#FFF4C7","nasf":1470,"rooms":[{"name":"Indoor Waiting","qty":1,"size":600,"seats":0,"nasf":600,"cost_per_gsf":550},{"name":"Outdoor Waiting","qty":1,"size":400,"seats":0,"nasf":400,"cost_per_gsf":350},{"name":"Health Ed Alcove","qty":1,"size":200,"seats":0,"nasf":200,"cost_per_gsf":500},{"name":"Patient WC","qty":1,"size":270,"seats":0,"nasf":270,"cost_per_gsf":550}]},{"code":"C5","name":"Med Education","color":"#39946a","nasf":700,"rooms":[{"name":"Student Workroom","qty":1,"size":350,"seats":8,"nasf":350,"cost_per_gsf":600},{"name":"Preceptor Offices","qty":2,"size":120,"seats":1,"nasf":240,"cost_per_gsf":600},{"name":"Student Lockers","qty":1,"size":110,"seats":0,"nasf":110,"cost_per_gsf":400}]},{"code":"C6","name":"Staff & Ops","color":"#98ACE5","nasf":680,"rooms":[{"name":"Provider Offices","qty":3,"size":120,"seats":1,"nasf":360,"cost_per_gsf":600},{"name":"Clinic Manager","qty":1,"size":120,"seats":1,"nasf":120,"cost_per_gsf":600},{"name":"Staff Break","qty":1,"size":200,"seats":0,"nasf":200,"cost_per_gsf":450}]},{"code":"C7","name":"Building Support","color":"#C2C3C8","nasf":530,"rooms":[{"name":"IT Closet","qty":1,"size":80,"seats":0,"nasf":80,"cost_per_gsf":800},{"name":"Custodial","qty":1,"size":80,"seats":0,"nasf":80,"cost_per_gsf":350},{"name":"Storage/Supply","qty":1,"size":200,"seats":0,"nasf":200,"cost_per_gsf":350},{"name":"Staff WC","qty":1,"size":170,"seats":0,"nasf":170,"cost_per_gsf":550}]}],"residence_categories":[{"code":"R1","name":"Single Rooms","color":"#ffc838","nasf":187500,"rooms":[{"name":"Single Student","qty":500,"size":375,"seats":1,"nasf":15400,"cost_per_gsf":480,"ficm":"HC-7b","comfort":"","circulation":""}]},{"code":"R2","name":"Double Rooms","color":"#FFAF7D","nasf":2750,"rooms":[{"name":"Double Student","qty":5,"size":550,"seats":2,"nasf":13600,"cost_per_gsf":450,"ficm":"HC-7b","comfort":"","circulation":""}]},{"code":"R3","name":"Triple Rooms","color":"#FF8C4A","nasf":0,"rooms":[{"name":"Triple Student","qty":0,"size":700,"seats":2,"nasf":0,"cost_per_gsf":450,"ficm":"3e","comfort":"","circulation":""}]},{"code":"R4","name":"Amenities","color":"#F28D79","nasf":11120,"rooms":[{"name":"Rooftop/Pool","qty":1,"size":0,"seats":0,"nasf":3500,"cost_per_gsf":350,"ficm":"3d","comfort":"","circulation":""},{"name":"Kitchen/Dining","qty":2,"size":1500,"seats":0,"nasf":2500,"cost_per_gsf":550,"ficm":"3d","comfort":"","circulation":""},{"name":"Fitness","qty":3,"size":1200,"seats":0,"nasf":2800,"cost_per_gsf":500,"ficm":"3d","comfort":"","circulation":""},{"name":"Multi-Purpose","qty":1,"size":2400,"seats":0,"nasf":2400,"cost_per_gsf":450,"ficm":"3d","comfort":"","circulation":""},{"name":"Group Study","qty":6,"size":280,"seats":6,"nasf":1680,"cost_per_gsf":500,"ficm":"3d","comfort":"","circulation":""},{"name":"Quiet Lounge","qty":1,"size":440,"seats":0,"nasf":440,"cost_per_gsf":450,"ficm":"3d","comfort":"","circulation":""}]},{"code":"R5","name":"Floor Common","color":"#b9f8db","nasf":5100,"rooms":[{"name":"Floor Lounge","qty":6,"size":500,"seats":0,"nasf":3000,"cost_per_gsf":400,"ficm":"1a","comfort":"","circulation":""},{"name":"Floor Study","qty":6,"size":250,"seats":4,"nasf":1500,"cost_per_gsf":450,"ficm":"1a","comfort":"","circulation":""},{"name":"Laundry","qty":3,"size":200,"seats":0,"nasf":600,"cost_per_gsf":350,"ficm":"1a","comfort":"","circulation":""}]},{"code":"R6","name":"Admin & Ops","color":"#FF6A4F","nasf":1350,"rooms":[{"name":"RA Apartments","qty":2,"size":375,"seats":1,"nasf":700,"cost_per_gsf":450,"ficm":"6a","comfort":"","circulation":""},{"name":"Mgmt Office","qty":2,"size":200,"seats":1,"nasf":200,"cost_per_gsf":550,"ficm":"6a","comfort":"","circulation":""},{"name":"Reception/Mail","qty":1,"size":200,"seats":0,"nasf":200,"cost_per_gsf":500,"ficm":"6a","comfort":"","circulation":""}]},{"code":"R7","name":"Building Support","color":"#C2C3C8","nasf":2910,"rooms":[{"name":"Lobby","qty":1,"size":600,"seats":0,"nasf":600,"cost_per_gsf":550,"ficm":"6a","comfort":"","circulation":""},{"name":"MEP/Gen/Cistern","qty":1,"size":1200,"seats":0,"nasf":1200,"cost_per_gsf":380,"ficm":"6a","comfort":"","circulation":""},{"name":"Storage/Maint","qty":1,"size":600,"seats":0,"nasf":600,"cost_per_gsf":350,"ficm":"6a","comfort":"","circulation":""},{"name":"Trash/Recycle","qty":1,"size":250,"seats":0,"nasf":250,"cost_per_gsf":300,"ficm":"6a","comfort":"","circulation":""},{"name":"Common WC","qty":1,"size":260,"seats":0,"nasf":260,"cost_per_gsf":500,"ficm":"6a","comfort":"","circulation":""}]}],"pavilions":[{"id":"P1","name":"Lecture & Active Learning","floors":3,"plate":18000,"grossing":0.7,"floor_height":14},{"id":"P2","name":"Anatomy, Sim & Skills","floors":2,"plate":22000,"grossing":0.7,"floor_height":14},{"id":"P3","name":"Small Group & Faculty","floors":3,"plate":16000,"grossing":0.7,"floor_height":14},{"id":"P4","name":"Student Commons & Study","floors":2,"plate":24000,"grossing":0.7,"floor_height":14},{"id":"P5","name":"Admin, IT & Support","floors":2,"plate":14000,"grossing":0.7,"floor_height":14}],"tbl_scenarios":[{"id":"A","name":"4 × 200","rooms":4,"seats":200,"nasf":17600,"sept_sec":4,"jan_sec":3,"may_sec":2,"spare_sept":0,"note":"Cost-minimum. Forces same content delivered to 4 sections sequentially."},{"id":"B","name":"6 × 200 (PRIMARY)","rooms":6,"seats":200,"nasf":26400,"sept_sec":4,"jan_sec":3,"may_sec":2,"spare_sept":2,"note":"Primary option. 4 parallel sections + 2 spare for events / make-ups."},{"id":"C","name":"8 × 200","rooms":8,"seats":200,"nasf":35200,"sept_sec":4,"jan_sec":3,"may_sec":2,"spare_sept":4,"note":"Full simultaneity all cohorts plus elective concurrent sections."},{"id":"D","name":"10 × 200","rooms":10,"seats":200,"nasf":44000,"sept_sec":4,"jan_sec":3,"may_sec":2,"spare_sept":6,"note":"Future-proof / growth scenario beyond 2,500 students."},{"id":"E","name":"4 × 200 + 2 × 100","rooms":6,"seats":"200/100","nasf":22000,"sept_sec":4,"jan_sec":3,"may_sec":2,"spare_sept":2,"note":"Hybrid: 4 TBL + 2 smaller active-learning rooms. Pedagogy-driven."}],"tbl_primary":"B","cost_table":[{"name":"200-Seat TBL Rooms","qty":6,"nasf":26400,"low":750,"mid":850,"high":950,"key":"lecture"},{"name":"Active Learning Studios","qty":4,"nasf":4800,"low":600,"mid":700,"high":800,"key":"lecture"},{"name":"AV Control / Lecturer Prep","qty":2,"nasf":400,"low":850,"mid":1000,"high":1100,"key":"lecture"},{"name":"PBL Rooms","qty":53,"nasf":13250,"low":600,"mid":675,"high":750,"key":"smallgrp"},{"name":"Seminar Rooms","qty":11,"nasf":6600,"low":550,"mid":625,"high":700,"key":"smallgrp"},{"name":"Flex Classrooms","qty":5,"nasf":4000,"low":600,"mid":675,"high":750,"key":"smallgrp"},{"name":"Digital Anatomy Labs","qty":2,"nasf":7000,"low":850,"mid":975,"high":1100,"key":"anatomy"},{"name":"Histology + Science Labs","qty":2,"nasf":6400,"low":700,"mid":800,"high":900,"key":"anatomy"},{"name":"Lab Support","qty":2,"nasf":2700,"low":500,"mid":575,"high":650,"key":"anatomy"},{"name":"SP Exam Rooms","qty":53,"nasf":6360,"low":700,"mid":800,"high":900,"key":"simulation"},{"name":"Clinical Skills Labs","qty":7,"nasf":11200,"low":750,"mid":875,"high":1000,"key":"simulation"},{"name":"Sim Suites","qty":4,"nasf":2400,"low":1000,"mid":1150,"high":1300,"key":"simulation"},{"name":"Sim Control Rooms","qty":4,"nasf":600,"low":900,"mid":1025,"high":1150,"key":"simulation"},{"name":"SP Briefing / Lounge","qty":2,"nasf":1200,"low":400,"mid":475,"high":550,"key":"simulation"},{"name":"Debriefing Rooms","qty":21,"nasf":6300,"low":500,"mid":575,"high":650,"key":"simulation"},{"name":"SP Control Suite","qty":2,"nasf":3000,"low":800,"mid":900,"high":1000,"key":"simulation"},{"name":"Data / Visualization Studio","qty":1,"nasf":2000,"low":650,"mid":725,"high":800,"key":"community"},{"name":"Main Commons","qty":1,"nasf":12800,"low":450,"mid":525,"high":600,"key":"amenities"},{"name":"Café / Servery","qty":1,"nasf":2200,"low":500,"mid":575,"high":650,"key":"amenities"},{"name":"Quiet Study (642 stations)","qty":1,"nasf":19360,"low":350,"mid":425,"high":500,"key":"amenities"},{"name":"Group Study Rooms","qty":18,"nasf":3600,"low":400,"mid":475,"high":550,"key":"amenities"},{"name":"Computer / Testing Labs","qty":2,"nasf":5600,"low":500,"mid":575,"high":650,"key":"amenities"},{"name":"Wellness Suite","qty":1,"nasf":3600,"low":450,"mid":525,"high":600,"key":"amenities"},{"name":"Student Org / Lockers / Atrium","qty":3,"nasf":5640,"low":300,"mid":375,"high":450,"key":"amenities"},{"name":"Private Faculty Offices","qty":125,"nasf":15000,"low":400,"mid":475,"high":550,"key":"faculty"},{"name":"Chair Offices + Hoteling","qty":35,"nasf":4200,"low":400,"mid":475,"high":550,"key":"faculty"},{"name":"Faculty Conference + Lounge","qty":8,"nasf":3600,"low":450,"mid":525,"high":600,"key":"faculty"},{"name":"Administration block","qty":5,"nasf":7200,"low":400,"mid":475,"high":550,"key":"admin"},{"name":"IT / AV (incl. AV Studio)","qty":5,"nasf":4000,"low":700,"mid":850,"high":1000,"key":"itav"},{"name":"Building Support","qty":21,"nasf":12000,"low":250,"mid":325,"high":400,"key":"support"}],"eui":{"lecture":55,"smallgrp":45,"anatomy":140,"simulation":120,"community":55,"amenities":50,"faculty":45,"admin":45,"itav":170,"support":60},"mep_zones":[{"id":"office","name":"Office / Faculty / Admin","ach":4,"supply_cfm_sf":0.5,"cooling_btu_sf":35,"lights_wsf":0.6,"plug_wsf":1.5,"rh":"40-55%","temp":"72°F"},{"id":"learn","name":"Classroom / TBL / Lecture","ach":6,"supply_cfm_sf":1,"cooling_btu_sf":45,"lights_wsf":0.8,"plug_wsf":2,"rh":"40-55%","temp":"72°F"},{"id":"anat","name":"Anatomy / Histology Lab","ach":12,"supply_cfm_sf":2,"cooling_btu_sf":70,"lights_wsf":1.1,"plug_wsf":3,"rh":"45-55%","temp":"70°F"},{"id":"sim","name":"Simulation (Specialty)","ach":8,"supply_cfm_sf":1.5,"cooling_btu_sf":60,"lights_wsf":1,"plug_wsf":3.5,"rh":"40-55%","temp":"70°F"},{"id":"sup","name":"Building Support","ach":4,"supply_cfm_sf":0.4,"cooling_btu_sf":25,"lights_wsf":0.5,"plug_wsf":1,"rh":"not controlled","temp":"70-78°F"}],"ficm_palette":{"lecture":"#82ddb3","smallgrp":"#b9f8db","anatomy":"#39946a","simulation":"#1b543a","community":"#66C6C1","amenities":"#ffc838","faculty":"#B6CDEF","admin":"#98ACE5","itav":"#C2C3C8","support":"#C2C3C8"},"cat_color_keys":{"Learning — Lecture & TBL Rooms":"lecture","Small Group & Collaborative":"smallgrp","Anatomy & Science Labs":"anatomy","Clinical Skills & Simulation":"simulation","Community & Global Health":"community","Student Learning & Amenities":"amenities","Faculty & Academic Offices":"faculty","Administration":"admin","IT & AV":"itav","Building Support":"support"},"comparison_peers":[{"id":"auc","label":"AUC","acres":8,"enrollment":1000,"Lecture":21008,"LabWetDry":13257,"SmallGroup":6266,"Testing":9429,"AcademicSpacesTotal":49960,"LibraryStudy":6434,"RecreationIndoor":10041,"ThirdPartyRetail":null,"StudentSupportTotal":16475,"FacultyOffices":10342,"SupportStaffOffices":14483,"AdminTotal":24826,"CampusSupport":6010,"CampusOps":15700,"CampusSupportOpsCircTotal":38997,"Total":130258,"RecreationOutdoor":94381,"HousingOnCampus":80436},{"id":"rusm_dom","label":"RUSM (Dominica)","acres":30,"enrollment":1375,"AcademicSpacesTotal":66518,"StudentSupportTotal":36930,"AdminTotal":33830,"CampusSupportOpsCircTotal":21719,"Total":158988},{"id":"rusm_dom_mp","label":"RUSM Dominica Master Plan (09/2011)","acres":48,"enrollment":2000,"Lecture":29753,"LabWetDry":14236,"SmallGroup":9814,"Testing":345,"AcademicSpacesTotal":93393,"LibraryStudy":15425,"RecreationIndoor":10994,"StudentSupportTotal":71039,"FacultyOffices":null,"SupportStaffOffices":null,"AdminTotal":57705,"CampusSupport":12237,"CampusOps":28527,"CampusSupportOpsCircTotal":40764,"Total":262901},{"id":"rusm_barb_lesc","label":"RUSM (Barbados LESC 2022)","acres":13,"enrollment":1500,"Lecture":7768,"SmallGroup":5547,"AcademicSpacesTotal":54150,"StudentSupportTotal":26419,"AdminTotal":13314,"CampusSupportOpsCircTotal":25498,"Total":119382,"RecreationOutdoor":102580,"HousingOnCampus":395607},{"id":"rusm_2025_eff","label":"RUSM 2025 Study — \"Efficient\"","acres":"TBD","enrollment":1500,"Lecture":30000,"LabWetDry":15000,"SmallGroup":10000,"AcademicSpacesTotal":65000,"LibraryStudy":20000,"RecreationIndoor":10000,"ThirdPartyRetail":5000,"StudentSupportTotal":35000,"FacultyOffices":10000,"SupportStaffOffices":15000,"AdminTotal":25000,"CampusSupportOpsCircTotal":35000,"Total":160000,"RecreationOutdoor":100000},{"id":"rusm_2025_std","label":"RUSM 2025 Study — \"Industry Standard\"","acres":"TBD","enrollment":1500,"AcademicSpacesTotal":75000,"StudentSupportTotal":60000,"AdminTotal":45000,"CampusSupportOpsCircTotal":30000,"Total":210000,"RecreationOutdoor":100000}],"aamc_benchmarks":{"NASF_per_concurrent":{"low":90,"mid":115,"high":140,"note":"AAMC NASF / concurrent student"},"GSF_per_concurrent":{"low":150,"mid":190,"high":230,"note":"AAMC GSF / concurrent student"},"NASF_per_enrolled":{"low":140,"mid":175,"high":220,"note":"AAMC NASF / annually enrolled"},"GSF_per_enrolled":{"low":230,"mid":290,"high":365,"note":"AAMC GSF / annually enrolled"},"Building_efficiency":{"low":0.55,"mid":0.6,"high":0.65,"note":"AAMC N:G ratio (efficiency)"},"Grossing_factor":{"low":1.55,"mid":1.65,"high":1.75,"note":"AAMC grossing factor"}},"dash_to_p22":{"Academic Spaces":["Learning — Lecture & TBL Rooms","Small Group & Collaborative","Anatomy & Science Labs","Clinical Skills & Simulation","Community & Global Health"],"Student Support":["Student Learning & Amenities"],"Admin & Offices":["Faculty & Academic Offices","Administration"],"Campus Support + Ops + Circulation":["IT & AV","Building Support"]},"ui_prefs":{"show_previous":true}};
+var S = {"project":{"name":"RUSM Barbados Preclinical Campus","client":"Adtalem / Ross University School of Medicine","location":"Barbados","version":"v6.8 · 2026-06-09","generated":"2026-06-09"},"assumptions":{"students":{"current":2500,"previous":1400},"cohort_sept_ratio":{"current":1,"previous":1},"cohort_jan_ratio":{"current":0.7,"previous":0.5},"cohort_may_ratio":{"current":0.4,"previous":0.4},"classroom_seats":{"current":200,"previous":350},"classroom_sf_per_seat":{"current":22,"previous":22},"housing_ratio":{"current":0.2,"previous":0.21},"dorm_beds":{"current":500,"previous":300},"apartments":{"current":25,"previous":0},"apartment_bedrooms":{"current":4,"previous":4},"parking_ratio":{"current":0.2,"previous":0.21},"parking_spots":{"current":600,"previous":300},"parking_sf_per_car":{"current":350,"previous":350},"clinic_sf":{"current":15000,"previous":15000},"faculty_ratio_denom":{"current":14,"previous":15},"n_g_ratio":{"current":0.7,"previous":0.55},"escalation_factor":{"current":1.104,"previous":1},"soft_cost_mult":{"current":1.3,"previous":1.3}},"buildings":{"academic":{"name":"Academic Building","nasf":287940,"ng":0.62,"gsf":411343},"clinic":{"name":"Outpatient Clinic","nasf":7630,"ng":0.48780487804878053,"gsf":15641},"residence":{"name":"Student Residence","nasf":210730,"ng":0.6666666666666666,"gsf":316095}},"academic_categories":[{"name":"Classroom and Breakout Spaces","rooms":[{"name":"TBL Classroom (300-seat)","people":1800,"seats":300,"qty":5,"size":6600,"nasf":26400,"notes":"200 seats x 22 SF/seat; flat-floor with operable partitions to neighbors. Two-ro","id":"lecture_0","ficm":"2c","comfort":"","circulation":"","pav_qty":{"P1":9},"aspect_ratio":1.75,"room_height":22},{"id":"new_1782740134390","name":"TBL Storage","qty":5,"size":700,"seats":null,"people":null,"notes":"","ficm":"2c","comfort":"","circulation":"","pav_qty":{"P1":5},"room_height":9},{"name":"Medium Classroom (50-seat)","people":400,"seats":50,"qty":13,"size":1250,"nasf":4800,"notes":"50-seat flat-floor flex room. TBL workshop sub-groups, mock OSCE staging, small-","id":"lecture_1","ficm":"2c","comfort":"","circulation":"","pav_qty":{"P1":6},"aspect_ratio":1.75,"room_height":9},{"id":"new_1778607160848","name":"Medium Classroom - Future Tech (50-seat)","qty":2,"size":1250,"seats":25,"people":50,"notes":"","ficm":"2c","comfort":"","circulation":"","pav_qty":{"P1":2},"aspect_ratio":1.75,"room_height":9},{"id":"new_1782740156057","name":"Medium Classroom Storage","qty":13,"size":150,"seats":null,"people":null,"notes":"","ficm":"2c","comfort":"","circulation":"","pav_qty":{"P1":22},"room_height":9},{"name":"Seminar Room (24-seat)","people":24,"seats":24,"qty":15,"size":600,"nasf":6600,"notes":"Faculty-led case discussion","id":"smallgrp_1","ficm":"2c","comfort":"","circulation":"","pav_qty":{"P3":6},"aspect_ratio":1.5,"room_height":9},{"name":"PBL Room (8-person)","people":8,"seats":8,"qty":45,"size":250,"nasf":13250,"notes":"Cohort-clustered + after-hours study.","id":"smallgrp_0","ficm":"2c","comfort":"","circulation":"","pav_qty":{"P3":30},"aspect_ratio":1.75,"room_height":9},{"id":"new_1779815673639","name":"Additional Build-out for +500 Students (TBD)","qty":0,"size":0,"seats":null,"people":null,"notes":"","ficm":"2c","comfort":"","circulation":"","aspect_ratio":1.75,"pav_qty":{"P1":1},"room_height":9}],"subgroups":["Flat-Floor TBL Rooms (Option B — Primary)","Active Learning Support"],"color_key":"lecture","color":"#82ddb3","pavilion":"P1","nasf_total":77450},{"name":"Proctored Exam Center","color":"#82ddb3","color_key":"lecture","pavilion":"P5","nasf_total":7200,"rooms":[{"id":"new_1778605950104","name":"Exam Centers (80-seat)","qty":3,"size":2400,"seats":80,"people":160,"notes":"Dedicated testing rooms, staffed","ficm":"2c","comfort":"","circulation":"","pav_qty":{"P1":2},"aspect_ratio":1.75,"room_height":9}]},{"name":"Anatomy & Science Labs","rooms":[{"name":"Digital Anatomy Lab (Anatomage)","people":145,"seats":80,"qty":1,"size":2800,"nasf":7000,"notes":"2 labs × 72 Anatomage tables. doubles.","id":"anatomy_0","ficm":"2b","comfort":"","circulation":"","pav_qty":{"P2":2},"aspect_ratio":1.5,"room_height":9},{"name":"Anatomy Support (storage, prep)","people":null,"seats":null,"qty":1,"size":1400,"nasf":1500,"notes":"Specimens, Anatomage server, prep","id":"anatomy_1","ficm":"2b","comfort":"","circulation":"","pav_qty":{"P2":1},"aspect_ratio":2,"room_height":9},{"name":"Ultrasound / Multi-purpose Teaching Lab ","people":80,"seats":80,"qty":1,"size":2800,"nasf":6400,"notes":"split into 2 for parallel use","id":"anatomy_2","ficm":"2b","comfort":"","circulation":"","pav_qty":{"P2":2},"aspect_ratio":1.5,"room_height":9},{"name":"Lab Prep / Storage","people":null,"seats":null,"qty":1,"size":700,"nasf":1200,"notes":"Slide library, microscope storage","id":"anatomy_3","ficm":"2b","comfort":"","circulation":"","pav_qty":{"P2":1},"aspect_ratio":2,"room_height":9},{"id":"new_1779815779872","name":"Additional Build-out for +500 Students (TBD)","qty":0,"size":0,"seats":null,"people":null,"notes":"","ficm":"2b","comfort":"","circulation":"","aspect_ratio":1.5,"pav_qty":{"P2":1},"room_height":9}],"subgroups":["Digital Anatomy Lab","Histology & Science Lab"],"color_key":"anatomy","color":"#39946a","pavilion":"P2","nasf_total":7700},{"name":"Clinical Skills & Simulation","rooms":[{"name":"Clinical Skills Lab (24-learner)","people":24,"seats":24,"qty":2,"size":1500,"nasf":11200,"notes":"168 simultaneous skills capacity; potential for 48 person rooms","id":"simulation_3","ficm":"5b","comfort":"","circulation":"","pav_qty":{"P2":6},"aspect_ratio":1.75,"room_height":9},{"name":"Simulation Suite (high-fidelity)","people":8,"seats":8,"qty":12,"size":600,"nasf":2400,"notes":"","id":"simulation_4","ficm":"5b","comfort":"","circulation":"","pav_qty":{"P2":8},"aspect_ratio":1.5,"room_height":9},{"name":"Sim Control Room","people":null,"seats":null,"qty":6,"size":150,"nasf":600,"notes":"1:2 with sim suite","id":"simulation_5","ficm":"5b","comfort":"","circulation":"","pav_qty":{"P2":8},"aspect_ratio":2,"room_height":9},{"name":"Debriefing Rooms (12-seat)","people":12,"seats":12,"qty":12,"size":300,"nasf":6300,"notes":"Video playback; after-hours study","id":"simulation_6","ficm":"5b","comfort":"","circulation":"","pav_qty":{"P2":12},"aspect_ratio":1.5,"room_height":9},{"id":"new_1778608149627","name":"SP/Sim Commons","qty":1,"size":2500,"seats":null,"people":null,"notes":"","ficm":"5b","comfort":"","circulation":"","pav_qty":{"P2":1},"aspect_ratio":2,"room_height":9},{"id":"new_1779816019747","name":"Additional Build-out for +500 Students (TBD)","qty":0,"size":0,"seats":null,"people":null,"notes":"","ficm":"5b","comfort":"","circulation":"","aspect_ratio":1.5,"pav_qty":{"P2":1},"room_height":9}],"subgroups":["Standardized Patient (SP) Suite","Clinical Skills Labs","High-Fidelity Simulation"],"color_key":"simulation","color":"#1b543a","pavilion":"P2","nasf_total":17200},{"name":"Standardized Patient Exam Space","color":"#1b543a","color_key":"simulation","pavilion":"P5","nasf_total":12200,"rooms":[{"name":"SP Exam Room (12-station equiv.)","people":4,"seats":2,"qty":36,"size":120,"nasf":6360,"notes":"Round-robin OSCE.","id":"simulation_0","ficm":"5b","comfort":"","circulation":"","pav_qty":{"P2":60},"aspect_ratio":1.5,"room_height":9},{"id":"new_1783709168440","name":"SP Exam Expansion Space","qty":12,"size":120,"seats":2,"people":null,"notes":"","ficm":"5b","comfort":"","circulation":""},{"id":"new_1783700452238","name":"SP Suite Corridors","qty":48,"size":80,"seats":null,"people":null,"notes":"","ficm":"5b","comfort":"","circulation":""},{"name":"SP Lounge & Changing","people":null,"seats":null,"qty":2,"size":700,"nasf":1400,"notes":"Lockers, waiting, makeup, costume staging","id":"simulation_1","ficm":"5b","comfort":"","circulation":"","pav_qty":{"P2":2},"aspect_ratio":2,"room_height":9},{"name":"Control / Observation Suite","people":null,"seats":null,"qty":1,"size":1200,"nasf":3000,"notes":"Central monitoring; multi-camera observation","id":"simulation_2","ficm":"5b","comfort":"","circulation":"","pav_qty":{"P2":1},"aspect_ratio":2,"room_height":9}]},{"name":"Student Support & Amenities","rooms":[{"name":"Social Seating","people":400,"seats":500,"qty":1,"size":15000,"nasf":12800,"notes":"0.25 seats per student / 30sf per seat","id":"amenities_0","ficm":"3e","comfort":"","circulation":"","pav_qty":{"P4":1},"aspect_ratio":1.75,"room_height":22},{"name":"Grab-and-go Cafe","people":100,"seats":100,"qty":2,"size":2500,"nasf":2200,"notes":"Light food service","id":"amenities_1","ficm":"3e","comfort":"","circulation":"","pav_qty":{"P4":2},"aspect_ratio":2,"room_height":9},{"id":"new_1783709025276","name":"Coffee Shops/Nooks","qty":5,"size":500,"seats":null,"people":null,"notes":"","ficm":"3e","comfort":"","circulation":""},{"id":"new_1783709026427","name":"Kitchenettes","qty":6,"size":500,"seats":null,"people":null,"notes":"","ficm":"3e","comfort":"","circulation":""},{"name":"Student Organization Offices","people":null,"seats":null,"qty":1,"size":4000,"nasf":2100,"notes":"","id":"amenities_6","ficm":"3e","comfort":"","circulation":"","pav_qty":{"P4":1},"aspect_ratio":2,"room_height":9},{"id":"new_1778604243512","name":"Fitness Center","qty":1,"size":8000,"seats":null,"people":null,"notes":"","ficm":"3e","comfort":"","circulation":"","pav_qty":{"P4":1},"aspect_ratio":1.25,"room_height":36},{"name":"Wellness Suite","people":null,"seats":null,"qty":4,"size":1500,"nasf":3600,"notes":"","id":"amenities_5","ficm":"3e","comfort":"","circulation":"","pav_qty":{"P4":3},"aspect_ratio":1.5,"room_height":9},{"name":"Lockers / Bag Storage","people":null,"seats":null,"qty":4,"size":1000,"nasf":2640,"notes":"","id":"amenities_7","ficm":"3e","comfort":"","circulation":"","pav_qty":{"P4":2},"aspect_ratio":2,"room_height":9},{"id":"new_1779216508206","name":"Library / Resource and Education Hub","qty":1,"size":6000,"seats":null,"people":null,"notes":"","ficm":"3e","comfort":"","circulation":"","pav_qty":{"P4":1},"aspect_ratio":2,"room_height":9},{"id":"new_1778605234430","name":"Reading Room","qty":1,"size":4500,"seats":150,"people":150,"notes":"","ficm":"3e","comfort":"","circulation":"","pav_qty":{"P4":1},"aspect_ratio":1.5,"room_height":22},{"name":"Quiet Study Seating","people":400,"seats":400,"qty":1,"size":12000,"nasf":19360,"notes":"0.3 seats per student / 30sf per seat","id":"amenities_2","ficm":"3e","comfort":"","circulation":"","pav_qty":{"P4":1},"aspect_ratio":1.75,"room_height":9},{"name":"Group Study Rooms (6-8 person)","people":8,"seats":8,"qty":20,"size":200,"nasf":3600,"notes":"Separate inventory for after-hours flex","id":"amenities_3","ficm":"3e","comfort":"","circulation":"","pav_qty":{"P4":12},"aspect_ratio":1.5,"room_height":9},{"id":"new_1779816310216","name":"Additional Build-out for +500 Students (TBD)","qty":0,"size":0,"seats":null,"people":null,"notes":"","ficm":"3e","comfort":"","circulation":"","aspect_ratio":1.5,"pav_qty":{"P4":1},"room_height":9}],"subgroups":["Commons & Lounge","Quiet Study","Wellness & Student Org","Entry & Vestibule"],"color_key":"amenities","color":"#ffc838","pavilion":"P4","nasf_total":74000},{"name":"Outdoor Program Space","color":"#FFF3B0","color_key":"outdoor","pavilion":"P5","nasf_total":6000,"rooms":[{"id":"new_1783949792277","name":"Flexible Events Lawn","qty":0,"size":100,"seats":null,"people":null,"notes":"","ficm":"7a","comfort":"","circulation":""},{"id":"new_1783949793319","name":"Flexible Sports Courts","qty":0,"size":100,"seats":null,"people":null,"notes":"","ficm":"7a","comfort":"","circulation":""},{"id":"new_1783949793612","name":"Covered Outdoor Pavilions","qty":0,"size":100,"seats":null,"people":null,"notes":"","ficm":"7a","comfort":"","circulation":""},{"id":"new_1783949793859","name":"Gardens","qty":0,"size":100,"seats":null,"people":null,"notes":"","ficm":"7a","comfort":"","circulation":""},{"id":"new_1783949794782","name":"Covered Walks","qty":0,"size":100,"seats":null,"people":null,"notes":"","ficm":"7a","comfort":"","circulation":""},{"id":"new_1783949794129","name":"Running and Interpretive Trails","qty":0,"size":100,"seats":null,"people":null,"notes":"","ficm":"7a","comfort":"","circulation":""},{"id":"new_1784054443357","name":"Food Vendor Stalls","qty":6,"size":1000,"seats":null,"people":null,"notes":"","ficm":"7a","comfort":"","circulation":""}]},{"name":"Faculty & Academic Offices","rooms":[{"name":"Private Faculty Office","people":1,"seats":null,"qty":80,"size":120,"nasf":15000,"notes":"Concept board ratio TBD.","id":"faculty_0","ficm":"1b","comfort":"","circulation":"","pav_qty":{"P3":75},"aspect_ratio":1.5,"room_height":8},{"name":"Department Chair Office","people":1,"seats":null,"qty":8,"size":180,"nasf":2520,"notes":"","id":"faculty_1","ficm":"1b","comfort":"","circulation":"","pav_qty":{"P3":8},"aspect_ratio":1.75,"room_height":8},{"name":"Hoteling Workstations (open)","people":1,"seats":null,"qty":50,"size":80,"nasf":1680,"notes":"","id":"faculty_2","ficm":"1b","comfort":"","circulation":"","pav_qty":{"P3":10},"aspect_ratio":1.5,"room_height":8},{"name":"Faculty Conference Room","people":14,"seats":16,"qty":10,"size":400,"nasf":2800,"notes":"","id":"faculty_3","ficm":"1b","comfort":"","circulation":"","pav_qty":{"P3":8},"aspect_ratio":1.75,"room_height":8},{"name":"Faculty Lounge","people":null,"seats":null,"qty":4,"size":800,"nasf":800,"notes":"Single shared","id":"faculty_4","ficm":"1b","comfort":"","circulation":"","pav_qty":{"P3":2},"aspect_ratio":2,"room_height":8},{"id":"new_1779817113815","name":"Additional Build-out for +500 Students (TBD)","qty":1,"size":0,"seats":null,"people":null,"notes":"","ficm":"1b","comfort":"","circulation":"","aspect_ratio":1.5,"pav_qty":{"P3":1},"room_height":8}],"subgroups":["Faculty Offices","Faculty Conference & Lounge"],"color_key":"faculty","color":"#B6CDEF","pavilion":"P3","nasf_total":22240},{"name":"Administration","rooms":[{"name":"Dean's Suite","people":6,"seats":null,"qty":1,"size":2000,"nasf":1200,"notes":"Dean + 5 reports","id":"admin_0","ficm":"1a","comfort":"","circulation":"","pav_qty":{"P5":1},"aspect_ratio":1.5,"room_height":8},{"name":"Office of Medical Education (OME)","people":12,"seats":null,"qty":1,"size":1500,"nasf":2400,"notes":"Curriculum + assessment","id":"admin_1","ficm":"1a","comfort":"","circulation":"","pav_qty":{"P5":1},"aspect_ratio":1.5,"room_height":8},{"name":"Student Affairs","people":10,"seats":null,"qty":1,"size":2000,"nasf":2000,"notes":"Advising, counseling intake, financial aid","id":"admin_2","ficm":"1a","comfort":"","circulation":"","pav_qty":{"P5":1},"aspect_ratio":1.5,"room_height":8},{"name":"Registrar / Records","people":4,"seats":null,"qty":1,"size":1500,"nasf":800,"notes":"Semi-fixed admin","id":"admin_3","ficm":"1a","comfort":"","circulation":"","pav_qty":{"P5":1},"aspect_ratio":1.5,"room_height":8},{"name":"Board Room","people":24,"seats":25,"qty":1,"size":1000,"nasf":800,"notes":"Curriculum committee, accreditation","id":"admin_4","ficm":"1a","comfort":"","circulation":"","pav_qty":{"P5":1},"aspect_ratio":1.5,"room_height":8},{"id":"new_1778608652382","name":"Education Administration","qty":1,"size":2000,"seats":null,"people":null,"notes":"","ficm":"1a","comfort":"","circulation":"","pav_qty":{"P5":1},"aspect_ratio":1.5,"room_height":8},{"id":"new_1778608762582","name":"Additional Admin FTE","qty":50,"size":180,"seats":null,"people":null,"notes":"","ficm":"1a","comfort":"","circulation":"","pav_qty":{"P5":1},"aspect_ratio":1.5,"room_height":8},{"id":"new_1779817207741","name":"Additional Build-out for +500 Students (TBD)","qty":1,"size":0,"seats":null,"people":null,"notes":"","ficm":"1a","comfort":"","circulation":"","aspect_ratio":1.5,"pav_qty":{"P5":1},"room_height":8}],"subgroups":["Administration"],"color_key":"admin","color":"#98ACE5","pavilion":"P5","nasf_total":19000},{"name":"IT & AV","rooms":[{"name":"Server / Telecom Room","people":null,"seats":null,"qty":5,"size":500,"nasf":800,"notes":"Primary + redundant","id":"itav_0","ficm":"6a","comfort":"","circulation":"","pav_qty":{"P5":4},"aspect_ratio":2,"room_height":9},{"name":"AV Studio (lecture capture)","people":null,"seats":null,"qty":1,"size":1500,"nasf":1200,"notes":"Hybrid model recording","id":"itav_1","ficm":"6a","comfort":"","circulation":"","pav_qty":{"P5":1},"aspect_ratio":2,"room_height":9},{"name":"IT Help Desk + Offices","people":10,"seats":null,"qty":1,"size":1500,"nasf":1600,"notes":"","id":"itav_2","ficm":"6a","comfort":"","circulation":"","pav_qty":{"P5":1},"aspect_ratio":2,"room_height":9},{"name":"AV Storage / Repair","people":null,"seats":null,"qty":5,"size":250,"nasf":400,"notes":"Cart storage, spares","id":"itav_3","ficm":"6a","comfort":"","circulation":"","pav_qty":{"P5":2},"aspect_ratio":2,"room_height":9}],"subgroups":["Technology"],"color_key":"itav","color":"#C2C3C8","pavilion":"P5","nasf_total":6750},{"name":"Building Support","rooms":[{"name":"Loading Dock / Receiving","people":null,"seats":null,"qty":1,"size":4000,"nasf":1500,"notes":"Single dock","id":"support_0","ficm":"6a","comfort":"","circulation":"","pav_qty":{"P5":1},"aspect_ratio":3,"room_height":22},{"name":"Custodial Closets (per floor)","people":null,"seats":null,"qty":10,"size":100,"nasf":500,"notes":"1 per floor","id":"support_2","ficm":"6a","comfort":"","circulation":"","pav_qty":{"P5":10},"aspect_ratio":2,"room_height":9},{"name":"Security Office","people":4,"seats":null,"qty":2,"size":600,"nasf":600,"notes":"Campus-wide node","id":"support_4","ficm":"6a","comfort":"","circulation":"","pav_qty":{"P5":2},"aspect_ratio":2,"room_height":9},{"name":"Mail / Print Room","people":null,"seats":null,"qty":2,"size":600,"nasf":400,"notes":"Centralized","id":"support_5","ficm":"6a","comfort":"","circulation":"","pav_qty":{"P5":2},"aspect_ratio":2,"room_height":9},{"id":"new_1779818391365","name":"Additional Build-out for +500 Students (TBD)","qty":1,"size":0,"seats":null,"people":null,"notes":"","ficm":"6a","comfort":"","circulation":"","aspect_ratio":2,"pav_qty":{"P5":1},"room_height":9}],"subgroups":["Building Operations"],"color_key":"support","color":"#C2C3C8","pavilion":"P5","nasf_total":7400},{"name":"Site/Campus Support","color":"#E3E6EC","color_key":"support","pavilion":"P5","nasf_total":30000,"rooms":[{"id":"new_1778611295171","name":"Site Maintenance and Operations Building","qty":1,"size":8000,"seats":null,"people":null,"notes":"","ficm":"6a","comfort":"","circulation":"","pav_qty":{"P5":1},"aspect_ratio":2,"room_height":25},{"id":"new_1780080366606","name":"Bulk Storage","qty":1,"size":5000,"seats":null,"people":null,"notes":"","ficm":"6a","comfort":"","circulation":"","pav_qty":{"P5":1},"room_height":10},{"id":"new_1778611326438","name":"Campus Operations Staff","qty":1,"size":4000,"seats":null,"people":null,"notes":"","ficm":"6a","comfort":"","circulation":"","pav_qty":{"P5":1},"aspect_ratio":2,"room_height":10},{"id":"new_1778615020979","name":"Grounds / Groundskeeping Facility","qty":1,"size":5000,"seats":null,"people":null,"notes":"","ficm":"6a","comfort":"","circulation":"","pav_qty":{"P5":1},"aspect_ratio":2,"room_height":25},{"id":"new_1780080315276","name":"Central Plant","qty":1,"size":5000,"seats":null,"people":null,"notes":"","ficm":"6a","comfort":"","circulation":"","pav_qty":{"P5":1},"room_height":25},{"id":"new_1782740825281","name":"Additional Undefined Support","qty":1,"size":3000,"seats":null,"people":null,"notes":"","ficm":"6a","comfort":"","circulation":"","pav_qty":{"P5":1}}]},{"name":"Housing","color":"#FFB74D","color_key":"housing","pavilion":"P5","nasf_total":800,"rooms":[{"id":"new_1784056088209","name":"New room","qty":1,"size":100,"seats":null,"people":null,"notes":"","ficm":"7b","comfort":"","circulation":""},{"id":"new_1784056088749","name":"New room","qty":1,"size":100,"seats":null,"people":null,"notes":"","ficm":"7b","comfort":"","circulation":""},{"id":"new_1784056088983","name":"New room","qty":1,"size":100,"seats":null,"people":null,"notes":"","ficm":"7b","comfort":"","circulation":""},{"id":"new_1784056089205","name":"New room","qty":1,"size":100,"seats":null,"people":null,"notes":"","ficm":"7b","comfort":"","circulation":""},{"id":"new_1784056089383","name":"New room","qty":1,"size":100,"seats":null,"people":null,"notes":"","ficm":"7b","comfort":"","circulation":""},{"id":"new_1784056089574","name":"New room","qty":1,"size":100,"seats":null,"people":null,"notes":"","ficm":"7b","comfort":"","circulation":""},{"id":"new_1784056089806","name":"New room","qty":1,"size":100,"seats":null,"people":null,"notes":"","ficm":"7b","comfort":"","circulation":""},{"id":"new_1784056100381","name":"New room","qty":1,"size":100,"seats":null,"people":null,"notes":"","ficm":"7b","comfort":"","circulation":""}]}],"clinic_categories":[{"code":"C1","name":"Exam & Consultation","color":"#96EBF6","nasf":2230,"rooms":[{"name":"General Exam","qty":16,"size":120,"seats":1,"nasf":1680,"cost_per_gsf":750},{"name":"Consultation","qty":1,"size":150,"seats":2,"nasf":150,"cost_per_gsf":700},{"name":"Triage Bays","qty":2,"size":80,"seats":1,"nasf":160,"cost_per_gsf":600}]},{"code":"C2","name":"Diagnostics","color":"#B6CDEF","nasf":1090,"rooms":[{"name":"POC Lab","qty":1,"size":300,"seats":0,"nasf":300,"cost_per_gsf":850},{"name":"Basic Imaging","qty":1,"size":400,"seats":0,"nasf":400,"cost_per_gsf":950},{"name":"Specimen Collection","qty":1,"size":120,"seats":1,"nasf":120,"cost_per_gsf":700},{"name":"Pharmacy","qty":1,"size":270,"seats":0,"nasf":270,"cost_per_gsf":800}]},{"code":"C3","name":"Urgent Care","color":"#52D1ED","nasf":930,"rooms":[{"name":"UC Entry/Triage","qty":1,"size":200,"seats":0,"nasf":200,"cost_per_gsf":650},{"name":"Exam Bays","qty":4,"size":120,"seats":1,"nasf":480,"cost_per_gsf":750},{"name":"Procedure Bay","qty":1,"size":250,"seats":1,"nasf":250,"cost_per_gsf":850}]},{"code":"C4","name":"Patient Support","color":"#FFF4C7","nasf":1470,"rooms":[{"name":"Indoor Waiting","qty":1,"size":600,"seats":0,"nasf":600,"cost_per_gsf":550},{"name":"Outdoor Waiting","qty":1,"size":400,"seats":0,"nasf":400,"cost_per_gsf":350},{"name":"Health Ed Alcove","qty":1,"size":200,"seats":0,"nasf":200,"cost_per_gsf":500},{"name":"Patient WC","qty":1,"size":270,"seats":0,"nasf":270,"cost_per_gsf":550}]},{"code":"C5","name":"Med Education","color":"#39946a","nasf":700,"rooms":[{"name":"Student Workroom","qty":1,"size":350,"seats":8,"nasf":350,"cost_per_gsf":600},{"name":"Preceptor Offices","qty":2,"size":120,"seats":1,"nasf":240,"cost_per_gsf":600},{"name":"Student Lockers","qty":1,"size":110,"seats":0,"nasf":110,"cost_per_gsf":400}]},{"code":"C6","name":"Staff & Ops","color":"#98ACE5","nasf":680,"rooms":[{"name":"Provider Offices","qty":3,"size":120,"seats":1,"nasf":360,"cost_per_gsf":600},{"name":"Clinic Manager","qty":1,"size":120,"seats":1,"nasf":120,"cost_per_gsf":600},{"name":"Staff Break","qty":1,"size":200,"seats":0,"nasf":200,"cost_per_gsf":450}]},{"code":"C7","name":"Building Support","color":"#C2C3C8","nasf":530,"rooms":[{"name":"IT Closet","qty":1,"size":80,"seats":0,"nasf":80,"cost_per_gsf":800},{"name":"Custodial","qty":1,"size":80,"seats":0,"nasf":80,"cost_per_gsf":350},{"name":"Storage/Supply","qty":1,"size":200,"seats":0,"nasf":200,"cost_per_gsf":350},{"name":"Staff WC","qty":1,"size":170,"seats":0,"nasf":170,"cost_per_gsf":550}]}],"residence_categories":[{"code":"R1","name":"Single Rooms","color":"#ffc838","nasf":187500,"rooms":[{"name":"Single Student","qty":500,"size":375,"seats":1,"nasf":15400,"cost_per_gsf":480,"ficm":"HC-7b","comfort":"","circulation":""}]},{"code":"R2","name":"Double Rooms","color":"#FFAF7D","nasf":2750,"rooms":[{"name":"Double Student","qty":5,"size":550,"seats":2,"nasf":13600,"cost_per_gsf":450,"ficm":"HC-7b","comfort":"","circulation":""}]},{"code":"R3","name":"Triple Rooms","color":"#FF8C4A","nasf":0,"rooms":[{"name":"Triple Student","qty":0,"size":700,"seats":2,"nasf":0,"cost_per_gsf":450,"ficm":"3e","comfort":"","circulation":""}]},{"code":"R4","name":"Amenities","color":"#F28D79","nasf":11120,"rooms":[{"name":"Rooftop/Pool","qty":1,"size":0,"seats":0,"nasf":3500,"cost_per_gsf":350,"ficm":"3d","comfort":"","circulation":""},{"name":"Kitchen/Dining","qty":2,"size":1500,"seats":0,"nasf":2500,"cost_per_gsf":550,"ficm":"3d","comfort":"","circulation":""},{"name":"Fitness","qty":3,"size":1200,"seats":0,"nasf":2800,"cost_per_gsf":500,"ficm":"3d","comfort":"","circulation":""},{"name":"Multi-Purpose","qty":1,"size":2400,"seats":0,"nasf":2400,"cost_per_gsf":450,"ficm":"3d","comfort":"","circulation":""},{"name":"Group Study","qty":6,"size":280,"seats":6,"nasf":1680,"cost_per_gsf":500,"ficm":"3d","comfort":"","circulation":""},{"name":"Quiet Lounge","qty":1,"size":440,"seats":0,"nasf":440,"cost_per_gsf":450,"ficm":"3d","comfort":"","circulation":""}]},{"code":"R5","name":"Floor Common","color":"#b9f8db","nasf":5100,"rooms":[{"name":"Floor Lounge","qty":6,"size":500,"seats":0,"nasf":3000,"cost_per_gsf":400,"ficm":"1a","comfort":"","circulation":""},{"name":"Floor Study","qty":6,"size":250,"seats":4,"nasf":1500,"cost_per_gsf":450,"ficm":"1a","comfort":"","circulation":""},{"name":"Laundry","qty":3,"size":200,"seats":0,"nasf":600,"cost_per_gsf":350,"ficm":"1a","comfort":"","circulation":""}]},{"code":"R6","name":"Admin & Ops","color":"#FF6A4F","nasf":1350,"rooms":[{"name":"RA Apartments","qty":2,"size":375,"seats":1,"nasf":700,"cost_per_gsf":450,"ficm":"6a","comfort":"","circulation":""},{"name":"Mgmt Office","qty":2,"size":200,"seats":1,"nasf":200,"cost_per_gsf":550,"ficm":"6a","comfort":"","circulation":""},{"name":"Reception/Mail","qty":1,"size":200,"seats":0,"nasf":200,"cost_per_gsf":500,"ficm":"6a","comfort":"","circulation":""}]},{"code":"R7","name":"Building Support","color":"#C2C3C8","nasf":2910,"rooms":[{"name":"Lobby","qty":1,"size":600,"seats":0,"nasf":600,"cost_per_gsf":550,"ficm":"6a","comfort":"","circulation":""},{"name":"MEP/Gen/Cistern","qty":1,"size":1200,"seats":0,"nasf":1200,"cost_per_gsf":380,"ficm":"6a","comfort":"","circulation":""},{"name":"Storage/Maint","qty":1,"size":600,"seats":0,"nasf":600,"cost_per_gsf":350,"ficm":"6a","comfort":"","circulation":""},{"name":"Trash/Recycle","qty":1,"size":250,"seats":0,"nasf":250,"cost_per_gsf":300,"ficm":"6a","comfort":"","circulation":""},{"name":"Common WC","qty":1,"size":260,"seats":0,"nasf":260,"cost_per_gsf":500,"ficm":"6a","comfort":"","circulation":""}]}],"pavilions":[{"id":"P1","name":"Lecture & Active Learning","floors":3,"plate":18000,"grossing":0.7,"floor_height":14},{"id":"P2","name":"Anatomy, Sim & Skills","floors":2,"plate":22000,"grossing":0.7,"floor_height":14},{"id":"P3","name":"Small Group & Faculty","floors":3,"plate":16000,"grossing":0.7,"floor_height":14},{"id":"P4","name":"Student Commons & Study","floors":2,"plate":24000,"grossing":0.7,"floor_height":14},{"id":"P5","name":"Admin, IT & Support","floors":2,"plate":14000,"grossing":0.7,"floor_height":14}],"tbl_scenarios":[{"id":"A","name":"4 × 200","rooms":4,"seats":200,"nasf":17600,"sept_sec":4,"jan_sec":3,"may_sec":2,"spare_sept":0,"note":"Cost-minimum. Forces same content delivered to 4 sections sequentially."},{"id":"B","name":"6 × 200 (PRIMARY)","rooms":6,"seats":200,"nasf":26400,"sept_sec":4,"jan_sec":3,"may_sec":2,"spare_sept":2,"note":"Primary option. 4 parallel sections + 2 spare for events / make-ups."},{"id":"C","name":"8 × 200","rooms":8,"seats":200,"nasf":35200,"sept_sec":4,"jan_sec":3,"may_sec":2,"spare_sept":4,"note":"Full simultaneity all cohorts plus elective concurrent sections."},{"id":"D","name":"10 × 200","rooms":10,"seats":200,"nasf":44000,"sept_sec":4,"jan_sec":3,"may_sec":2,"spare_sept":6,"note":"Future-proof / growth scenario beyond 2,500 students."},{"id":"E","name":"4 × 200 + 2 × 100","rooms":6,"seats":"200/100","nasf":22000,"sept_sec":4,"jan_sec":3,"may_sec":2,"spare_sept":2,"note":"Hybrid: 4 TBL + 2 smaller active-learning rooms. Pedagogy-driven."}],"tbl_primary":"A","cost_table":[{"name":"200-Seat TBL Rooms","qty":6,"nasf":26400,"low":750,"mid":850,"high":950,"key":"lecture"},{"name":"Active Learning Studios","qty":4,"nasf":4800,"low":600,"mid":700,"high":800,"key":"lecture"},{"name":"AV Control / Lecturer Prep","qty":2,"nasf":400,"low":850,"mid":1000,"high":1100,"key":"lecture"},{"name":"PBL Rooms","qty":53,"nasf":13250,"low":600,"mid":675,"high":750,"key":"smallgrp"},{"name":"Seminar Rooms","qty":11,"nasf":6600,"low":550,"mid":625,"high":700,"key":"smallgrp"},{"name":"Flex Classrooms","qty":5,"nasf":4000,"low":600,"mid":675,"high":750,"key":"smallgrp"},{"name":"Digital Anatomy Labs","qty":2,"nasf":7000,"low":850,"mid":975,"high":1100,"key":"anatomy"},{"name":"Histology + Science Labs","qty":2,"nasf":6400,"low":700,"mid":800,"high":900,"key":"anatomy"},{"name":"Lab Support","qty":2,"nasf":2700,"low":500,"mid":575,"high":650,"key":"anatomy"},{"name":"SP Exam Rooms","qty":53,"nasf":6360,"low":700,"mid":800,"high":900,"key":"simulation"},{"name":"Clinical Skills Labs","qty":7,"nasf":11200,"low":750,"mid":875,"high":1000,"key":"simulation"},{"name":"Sim Suites","qty":4,"nasf":2400,"low":1000,"mid":1150,"high":1300,"key":"simulation"},{"name":"Sim Control Rooms","qty":4,"nasf":600,"low":900,"mid":1025,"high":1150,"key":"simulation"},{"name":"SP Briefing / Lounge","qty":2,"nasf":1200,"low":400,"mid":475,"high":550,"key":"simulation"},{"name":"Debriefing Rooms","qty":21,"nasf":6300,"low":500,"mid":575,"high":650,"key":"simulation"},{"name":"SP Control Suite","qty":2,"nasf":3000,"low":800,"mid":900,"high":1000,"key":"simulation"},{"name":"Data / Visualization Studio","qty":1,"nasf":2000,"low":650,"mid":725,"high":800,"key":"community"},{"name":"Main Commons","qty":1,"nasf":12800,"low":450,"mid":525,"high":600,"key":"amenities"},{"name":"Café / Servery","qty":1,"nasf":2200,"low":500,"mid":575,"high":650,"key":"amenities"},{"name":"Quiet Study (642 stations)","qty":1,"nasf":19360,"low":350,"mid":425,"high":500,"key":"amenities"},{"name":"Group Study Rooms","qty":18,"nasf":3600,"low":400,"mid":475,"high":550,"key":"amenities"},{"name":"Computer / Testing Labs","qty":2,"nasf":5600,"low":500,"mid":575,"high":650,"key":"amenities"},{"name":"Wellness Suite","qty":1,"nasf":3600,"low":450,"mid":525,"high":600,"key":"amenities"},{"name":"Student Org / Lockers / Atrium","qty":3,"nasf":5640,"low":300,"mid":375,"high":450,"key":"amenities"},{"name":"Private Faculty Offices","qty":125,"nasf":15000,"low":400,"mid":475,"high":550,"key":"faculty"},{"name":"Chair Offices + Hoteling","qty":35,"nasf":4200,"low":400,"mid":475,"high":550,"key":"faculty"},{"name":"Faculty Conference + Lounge","qty":8,"nasf":3600,"low":450,"mid":525,"high":600,"key":"faculty"},{"name":"Administration block","qty":5,"nasf":7200,"low":400,"mid":475,"high":550,"key":"admin"},{"name":"IT / AV (incl. AV Studio)","qty":5,"nasf":4000,"low":700,"mid":850,"high":1000,"key":"itav"},{"name":"Building Support","qty":21,"nasf":12000,"low":250,"mid":325,"high":400,"key":"support"}],"eui":{"lecture":55,"smallgrp":45,"anatomy":140,"simulation":120,"community":55,"amenities":50,"faculty":45,"admin":45,"itav":170,"support":60},"mep_zones":[{"id":"office","name":"Office / Faculty / Admin","ach":4,"supply_cfm_sf":0.5,"cooling_btu_sf":35,"lights_wsf":0.6,"plug_wsf":1.5,"rh":"40-55%","temp":"72°F"},{"id":"learn","name":"Classroom / TBL / Lecture","ach":6,"supply_cfm_sf":1,"cooling_btu_sf":45,"lights_wsf":0.8,"plug_wsf":2,"rh":"40-55%","temp":"72°F"},{"id":"anat","name":"Anatomy / Histology Lab","ach":12,"supply_cfm_sf":2,"cooling_btu_sf":70,"lights_wsf":1.1,"plug_wsf":3,"rh":"45-55%","temp":"70°F"},{"id":"sim","name":"Simulation (Specialty)","ach":8,"supply_cfm_sf":1.5,"cooling_btu_sf":60,"lights_wsf":1,"plug_wsf":3.5,"rh":"40-55%","temp":"70°F"},{"id":"sup","name":"Building Support","ach":4,"supply_cfm_sf":0.4,"cooling_btu_sf":25,"lights_wsf":0.5,"plug_wsf":1,"rh":"not controlled","temp":"70-78°F"}],"ficm_palette":{"lecture":"#82ddb3","smallgrp":"#b9f8db","anatomy":"#39946a","simulation":"#1b543a","community":"#66C6C1","amenities":"#ffc838","faculty":"#B6CDEF","admin":"#98ACE5","itav":"#C2C3C8","support":"#C2C3C8"},"cat_color_keys":{"Learning — Lecture & TBL Rooms":"lecture","Small Group & Collaborative":"smallgrp","Anatomy & Science Labs":"anatomy","Clinical Skills & Simulation":"simulation","Community & Global Health":"community","Student Learning & Amenities":"amenities","Faculty & Academic Offices":"faculty","Administration":"admin","IT & AV":"itav","Building Support":"support"},"comparison_peers":[{"id":"auc","label":"AUC","acres":8,"enrollment":1000,"Lecture":21008,"LabWetDry":13257,"SmallGroup":6266,"Testing":9429,"AcademicSpacesTotal":49960,"LibraryStudy":6434,"RecreationIndoor":10041,"ThirdPartyRetail":null,"StudentSupportTotal":16475,"FacultyOffices":10342,"SupportStaffOffices":14483,"AdminTotal":24826,"CampusSupport":6010,"CampusOps":15700,"CampusSupportOpsCircTotal":38997,"Total":130258,"RecreationOutdoor":94381,"HousingOnCampus":80436},{"id":"rusm_dom","label":"RUSM (Dominica)","acres":30,"enrollment":1375,"AcademicSpacesTotal":66518,"StudentSupportTotal":36930,"AdminTotal":33830,"CampusSupportOpsCircTotal":21719,"Total":158988},{"id":"rusm_dom_mp","label":"RUSM Dominica Master Plan (09/2011)","acres":48,"enrollment":2000,"Lecture":29753,"LabWetDry":14236,"SmallGroup":9814,"Testing":345,"AcademicSpacesTotal":93393,"LibraryStudy":15425,"RecreationIndoor":10994,"StudentSupportTotal":71039,"FacultyOffices":null,"SupportStaffOffices":null,"AdminTotal":57705,"CampusSupport":12237,"CampusOps":28527,"CampusSupportOpsCircTotal":40764,"Total":262901},{"id":"rusm_barb_lesc","label":"RUSM (Barbados LESC 2022)","acres":13,"enrollment":1500,"Lecture":7768,"SmallGroup":5547,"AcademicSpacesTotal":54150,"StudentSupportTotal":26419,"AdminTotal":13314,"CampusSupportOpsCircTotal":25498,"Total":119382,"RecreationOutdoor":102580,"HousingOnCampus":395607},{"id":"rusm_2025_eff","label":"RUSM 2025 Study — \"Efficient\"","acres":"TBD","enrollment":1500,"Lecture":30000,"LabWetDry":15000,"SmallGroup":10000,"AcademicSpacesTotal":65000,"LibraryStudy":20000,"RecreationIndoor":10000,"ThirdPartyRetail":5000,"StudentSupportTotal":35000,"FacultyOffices":10000,"SupportStaffOffices":15000,"AdminTotal":25000,"CampusSupportOpsCircTotal":35000,"Total":160000,"RecreationOutdoor":100000},{"id":"rusm_2025_std","label":"RUSM 2025 Study — \"Industry Standard\"","acres":"TBD","enrollment":1500,"AcademicSpacesTotal":75000,"StudentSupportTotal":60000,"AdminTotal":45000,"CampusSupportOpsCircTotal":30000,"Total":210000,"RecreationOutdoor":100000}],"aamc_benchmarks":{"NASF_per_concurrent":{"low":90,"mid":115,"high":140,"note":"AAMC NASF / concurrent student"},"GSF_per_concurrent":{"low":150,"mid":190,"high":230,"note":"AAMC GSF / concurrent student"},"NASF_per_enrolled":{"low":140,"mid":175,"high":220,"note":"AAMC NASF / annually enrolled"},"GSF_per_enrolled":{"low":230,"mid":290,"high":365,"note":"AAMC GSF / annually enrolled"},"Building_efficiency":{"low":0.55,"mid":0.6,"high":0.65,"note":"AAMC N:G ratio (efficiency)"},"Grossing_factor":{"low":1.55,"mid":1.65,"high":1.75,"note":"AAMC grossing factor"}},"dash_to_p22":{"Academic Spaces":["Learning — Lecture & TBL Rooms","Small Group & Collaborative","Anatomy & Science Labs","Clinical Skills & Simulation","Community & Global Health"],"Student Support":["Student Learning & Amenities"],"Admin & Offices":["Faculty & Academic Offices","Administration"],"Campus Support + Ops + Circulation":["IT & AV","Building Support"]},"ui_prefs":{"show_previous":true},"solar":{"roof_util":0.75,"yield_kbtu_sf":85}};
 
 // ====================================================================
 // Tab + building registry
@@ -370,13 +399,11 @@ var TABS = [
   {id:"overview",   label:"Overview"},
   {id:"program",    label:"Program"},
   {id:"pavilions",  label:"Pavilions & Stacking"},
-  {id:"sectioning", label:"Sectioning"},
-  {id:"schedule",   label:"Weekly Schedule"},
-  {id:"cost",       label:"Cost & Energy"},
-  {id:"mep",        label:"MEP"},
   {id:"neigh",      label:"Neighborhood"},
   {id:"visuals",    label:"Visualizations"},
   {id:"notes",      label:"Notes"},
+  {id:"cost",       label:"Cost & Energy"},
+  {id:"mep",        label:"MEP"},
   {id:"scenarios",  label:"Site Scenarios"}
 ];
 var state = {bldg:"academic", tab:"assumptions"};
@@ -426,7 +453,9 @@ var FICM_CATALOG = [
   {code:"HC-4B", hex:"#FFAF7D", group:"HC Surgical",   label:"HC — surgical services"},
   {code:"HC-4C", hex:"#ffc838", group:"HC Emergency",  label:"HC — emergency services"},
   {code:"HC-4d", hex:"#FFEED4", group:"HC Emergency",  label:"HC — circulation surgical/emergency"},
-  {code:"HC-5h", hex:"#FF26B0", group:"HC Vertical",   label:"HC — soiled elevator highlight"}
+  {code:"HC-5h", hex:"#FF26B0", group:"HC Vertical",   label:"HC — soiled elevator highlight"},
+  {code:"7a",    hex:"#FFF3B0", group:"Outdoor",        label:"Outdoor — program space (lawns, courts, pavilions, trails)"},
+  {code:"7b",    hex:"#FFB74D", group:"Housing",        label:"Housing — student residential space"}
 ];
 function ficmEntry(code){ for(var i=0;i<FICM_CATALOG.length;i++){ if(FICM_CATALOG[i].code===code) return FICM_CATALOG[i]; } return null; }
 function ficmHex(code){ var e=ficmEntry(code); return e?e.hex:null; }
@@ -435,7 +464,7 @@ function ficmHex(code){ var e=ficmEntry(code); return e?e.hex:null; }
 var ACAD_KEY_TO_FICM = {
   lecture:"2c", smallgrp:"3d", anatomy:"2b", simulation:"5b",
   community:"2a", amenities:"3e", faculty:"1b", admin:"1a",
-  itav:"6a", support:"6a"
+  itav:"6a", support:"6a", outdoor:"7a", housing:"7b"
 };
 // Default FICM code for clinic categories (Healthcare palette, by code prefix)
 var CLINIC_CODE_TO_FICM = {
@@ -748,7 +777,7 @@ function tabAssumptions(){
   var SLIDERS=[
     {key:"enrollment",      label:"Total campus enrollment",         min:2000,max:3000,step:50,  color:"#888",    fmt:function(v){return v.toLocaleString()+" students";}},
     {key:"ng_ratio",        label:"Assumed NSF / GSF ratio",         min:0.60,max:0.80,step:0.01,color:"#888",    fmt:function(v){return (v*100).toFixed(0)+"% N:G";}},
-    {key:"tbl_rooms",       label:"Total TBL rooms",                 min:6,   max:12,  step:1,   color:"#82ddb3", fmt:function(v){return v+" rooms × "+P.tbl_capacity+" seats × 22 SF = "+fmtK(v*P.tbl_capacity*22)+" NSF";}},
+    {key:"tbl_rooms",       label:"Total TBL rooms",                 min:4,   max:10,  step:1,   color:"#82ddb3", fmt:function(v){return v+" rooms × "+P.tbl_capacity+" seats × 22 SF = "+fmtK(v*P.tbl_capacity*22)+" NSF";}},
     {key:"tbl_capacity",    label:"TBL room capacity",               min:200, max:300, step:10,  color:"#82ddb3", fmt:function(v){return v+" seats/room";}},
     {key:"other_classrooms",label:"Other classrooms & teaching labs",min:10,  max:20,  step:1,   color:"#b9f8db", fmt:function(v){return v+" NSF/person × "+P.enrollment.toLocaleString()+" = "+fmtK(v*P.enrollment)+" NSF";}},
     {key:"skills_sim",      label:"Skills / Sim / SP",               min:8,   max:16,  step:1,   color:"#1b543a", fmt:function(v){return v+" NSF/person × "+P.enrollment.toLocaleString()+" = "+fmtK(v*P.enrollment)+" NSF";}},
@@ -1487,7 +1516,7 @@ function tabProgram(){
 
   var card = el("div",{class:"card"},[
     el("h3",null,[bldgName+" — Editable Program"]),
-    el("div",{class:"note"},["Click any cell to edit. Drag the ⋮⋮ handle (or the row #) to reorder spaces within a category. FICM tints the row; Space Comfort & Circulation are blank until set. People = Qty × Seats (calculated automatically). Click Notes to open multiline editor."])
+    el("div",{class:"note"},["Click any cell to edit. Drag a row's ⋮⋮ handle to reorder it within a category, or drop it onto a different category to move it there. Drag a category's ⣿ handle to reorder categories. FICM tints the row; Space Comfort & Circulation are blank until set. People = Qty × Seats (calculated automatically). Click Notes to open multiline editor."])
   ]);
 
   ctx.cats.forEach(function(cat, ci){
@@ -1499,8 +1528,9 @@ function tabProgram(){
     if(state.bldg==="academic") cat.nasf_total = catTotal;
     else cat.nasf = catTotal;
 
-    var wrap = el("div",{class:"prog-cat"});
+    var wrap = el("div",{class:"prog-cat",draggable:"true","data-ci":ci});
     var head = el("div",{class:"prog-cat-head",style:"background:"+catColor},[
+      el("span",{class:"cat-drag-handle",title:"Drag to reorder category"},["\u22ee\u22ee"]),
       el("input",{type:"text",value:catName,style:"flex:1;font-weight:800;font-size:14px;border:none;background:transparent;color:#1F2A44",
         onchange:function(e){
           if(state.bldg==="academic") cat.name = e.target.value;
@@ -1521,6 +1551,70 @@ function tabProgram(){
     ]);
     wrap.appendChild(head);
 
+    // Category-level drag-and-drop wiring (reorder categories, or accept a row dropped in this category's whitespace)
+    wrap.addEventListener("dragstart", function(e){
+      e.stopPropagation();
+      e.dataTransfer.effectAllowed = "move";
+      e.dataTransfer.setData("text/category", String(ci));
+      wrap.classList.add("dragging");
+    });
+    wrap.addEventListener("dragend", function(){
+      wrap.classList.remove("dragging");
+      Array.prototype.forEach.call(card.querySelectorAll(".prog-cat"), function(w2){
+        w2.classList.remove("cat-drag-over-top"); w2.classList.remove("cat-drag-over-bottom"); w2.classList.remove("cat-row-drop-target");
+      });
+    });
+    wrap.addEventListener("dragover", function(e){
+      var types = e.dataTransfer.types;
+      var isCatDrag = Array.prototype.includes.call(types, "text/category");
+      var isRowDrag = Array.prototype.includes.call(types, "text/plain");
+      if(!isCatDrag && !isRowDrag) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+      if(isCatDrag){
+        var rect = wrap.getBoundingClientRect();
+        var before = (e.clientY - rect.top) < rect.height/2;
+        wrap.classList.toggle("cat-drag-over-top", before);
+        wrap.classList.toggle("cat-drag-over-bottom", !before);
+      } else {
+        wrap.classList.add("cat-row-drop-target");
+      }
+    });
+    wrap.addEventListener("dragleave", function(){
+      wrap.classList.remove("cat-drag-over-top"); wrap.classList.remove("cat-drag-over-bottom"); wrap.classList.remove("cat-row-drop-target");
+    });
+    wrap.addEventListener("drop", function(e){
+      wrap.classList.remove("cat-drag-over-top"); wrap.classList.remove("cat-drag-over-bottom"); wrap.classList.remove("cat-row-drop-target");
+      var catRaw = e.dataTransfer.getData("text/category");
+      if(catRaw !== ""){
+        e.preventDefault(); e.stopPropagation();
+        var srcCi = parseInt(catRaw,10);
+        if(srcCi === ci) return;
+        var rect = wrap.getBoundingClientRect();
+        var before = (e.clientY - rect.top) < rect.height/2;
+        var insertAt = before ? ci : ci+1;
+        var movedCat = ctx.cats.splice(srcCi, 1)[0];
+        if(srcCi < insertAt) insertAt -= 1;
+        ctx.cats.splice(insertAt, 0, movedCat);
+        render();
+        return;
+      }
+      var rowRaw = e.dataTransfer.getData("text/plain");
+      if(rowRaw !== ""){
+        // Row dropped in this category's whitespace (not on a specific existing row) — append to end of this category
+        e.preventDefault(); e.stopPropagation();
+        var src = rowRaw.split(":");
+        if(src.length!==2) return;
+        var srcCat = parseInt(src[0],10), srcRow = parseInt(src[1],10);
+        var srcRooms = ctx.cats[srcCat] && ctx.cats[srcCat].rooms;
+        if(!srcRooms) return;
+        if(srcCat === ci) return;  // already in this category — row's own drop handler covers within-category reordering
+        var moved = srcRooms.splice(srcRow, 1)[0];
+        rooms.push(moved);
+        render();
+      }
+    });
+
     var t = el("table",{class:"prog-tbl"});
     // Columns: drag | # | Space | Qty | Size Ea | NASF | Seats | SF/Seat | People | FICM | Space Comfort | Circulation | Notes | delete
     var hdRow = el("tr",null,[
@@ -1538,6 +1632,7 @@ function tabProgram(){
       el("th",null,["Circulation"]),
       el("th",{class:"col-roomsize"},["Room Size"]),
       el("th",{class:"col-aspect"},["Max AR"]),
+      el("th",{class:"col-height"},["Room Height"]),
       el("th",null,["Notes"]),
       el("th",{style:"width:30px"},[""])
     ]);
@@ -1573,19 +1668,22 @@ function tabProgram(){
         el("td",{class:"choice-cell"},[choiceSelectCell(r,"circulation",CIRCULATION_CHOICES)]),
         el("td",{class:"col-roomsize"},[roomSizeSelectCell(r)]),
         el("td",{class:"col-aspect"},[aspectRatioCell(r)]),
+        el("td",{class:"col-height"},[roomHeightCell(r)]),
         el("td",{style:"min-width:120px"},[notesCell(r)]),
         el("td",null,[el("button",{class:"del-btn",onclick:function(){
           rooms.splice(ri,1); render();
         }},["✕"])])
       ]);
 
-      // Drag-and-drop wiring (within this category only)
+      // Drag-and-drop wiring (rows can move within OR across categories)
       trEl.addEventListener("dragstart", function(e){
+        e.stopPropagation();
         e.dataTransfer.effectAllowed = "move";
         e.dataTransfer.setData("text/plain", ci+":"+ri);   // source identifier
         trEl.classList.add("dragging");
       });
-      trEl.addEventListener("dragend", function(){
+      trEl.addEventListener("dragend", function(e){
+        e.stopPropagation();
         trEl.classList.remove("dragging");
         // clear any lingering indicators on siblings
         Array.prototype.forEach.call(t.querySelectorAll("tr"), function(r2){
@@ -1593,29 +1691,36 @@ function tabProgram(){
         });
       });
       trEl.addEventListener("dragover", function(e){
+        if(!Array.prototype.includes.call(e.dataTransfer.types, "text/plain")) return;
         e.preventDefault();
+        e.stopPropagation();
         e.dataTransfer.dropEffect = "move";
         var rect = trEl.getBoundingClientRect();
         var before = (e.clientY - rect.top) < rect.height/2;
         trEl.classList.toggle("drag-over-top", before);
         trEl.classList.toggle("drag-over-bottom", !before);
       });
-      trEl.addEventListener("dragleave", function(){
+      trEl.addEventListener("dragleave", function(e){
+        e.stopPropagation();
         trEl.classList.remove("drag-over-top"); trEl.classList.remove("drag-over-bottom");
       });
       trEl.addEventListener("drop", function(e){
+        var raw = (e.dataTransfer.getData("text/plain")||"");
+        if(raw==="") return;   // not a row drag (likely a category drag) — let category handler deal with it
         e.preventDefault();
+        e.stopPropagation();
         trEl.classList.remove("drag-over-top"); trEl.classList.remove("drag-over-bottom");
-        var src = (e.dataTransfer.getData("text/plain")||"").split(":");
+        var src = raw.split(":");
         if(src.length!==2) return;
         var srcCat = parseInt(src[0],10), srcRow = parseInt(src[1],10);
-        if(srcCat !== ci) return;  // ignore cross-category drops (rooms keep their category)
-        if(srcRow === ri) return;
+        if(srcCat === ci && srcRow === ri) return;
+        var srcRooms = ctx.cats[srcCat] && ctx.cats[srcCat].rooms;
+        if(!srcRooms) return;
         var rect = trEl.getBoundingClientRect();
         var before = (e.clientY - rect.top) < rect.height/2;
         var insertAt = before ? ri : ri+1;
-        var moved = rooms.splice(srcRow, 1)[0];
-        if(srcRow < insertAt) insertAt -= 1;  // adjust because the array shrunk
+        var moved = srcRooms.splice(srcRow, 1)[0];
+        if(srcCat === ci && srcRow < insertAt) insertAt -= 1;  // adjust because the same array shrank
         rooms.splice(insertAt, 0, moved);
         render();
       });
@@ -1782,6 +1887,21 @@ function aspectRatioCell(r){
     var v = parseFloat(i.value.replace(/[^0-9.]/g,""));
     r.aspect_ratio = (isNaN(v)||v<=0) ? null : v;
     // no full render needed — cosmetic column only
+  });
+  return i;
+}
+
+// Room floor-to-ceiling height (ft) — editable input stored on room as r.room_height
+function roomHeightCell(r){
+  var i = el("input",{
+    type:"text",
+    class:"aspect-inp",
+    value: r.room_height ? String(r.room_height) : "",
+    placeholder:"e.g. 14"
+  });
+  i.addEventListener("change",function(){
+    var v = parseFloat(i.value.replace(/[^0-9.]/g,""));
+    r.room_height = (isNaN(v)||v<=0) ? null : v;
   });
   return i;
 }
@@ -2807,26 +2927,7 @@ function tabVisuals(){
   });
   v.appendChild(c1);
 
-  var c2 = el("div",{class:"card"},[el("h3",null,["Pavilion Capacity vs Assignment"])]);
-  S.pavilions.forEach(function(p){
-    var assigned = 0;
-    S.academic_categories.forEach(function(c){
-      c.rooms.forEach(function(r){
-        var qHere = getRoomPavQty(r, p.id);
-        if(qHere > 0) assigned += qHere * (Number(r.size)||0);
-      });
-    });
-    var capacity=p.floors*p.plate*asg("n_g_ratio");
-    var pctFill = capacity?(assigned/capacity*100):0;
-    c2.appendChild(el("div",{style:"display:flex;align-items:center;gap:8px;margin:6px 0"},[
-      el("div",{style:"width:220px;font-size:12px"},[p.id+" · "+p.name]),
-      el("div",{style:"flex:1;background:#F1F4F8;border-radius:4px;height:22px;overflow:hidden;position:relative"},[
-        el("div",{style:"background:"+(pctFill>100?"#C0392B":pctFill<55?"#F39C12":"#2E7D32")+";width:"+Math.min(pctFill,100).toFixed(1)+"%;height:100%"}),
-        el("div",{style:"position:absolute;left:6px;top:0;font-size:11px;font-weight:600;line-height:22px;color:#fff"},[fmt(assigned)+" / "+fmt(capacity)+" NASF · "+pctFill.toFixed(0)+"%"])
-      ])
-    ]));
-  });
-  v.appendChild(c2);
+  // Pavilion Capacity vs Assignment removed
 
   v.appendChild(el("div",{class:"card"},[el("h3",null,["Cohort-stack reference (external)"]),
     el("div",{class:"note"},["See ProgramV2/V2_Academic_Program_Stacks.svg for the to-scale cohort-stack layout."])]));
@@ -47761,7 +47862,8 @@ function ssBuildProgramRects(){
           catName:cat.name, catColor:cat.color||"#E3E6EC",
           pw:pw, ph:ph,   // program-panel display px
           gw:gw, gh:gh,   // grid-canvas px
-          nsf:nsf
+          nsf:nsf, roomHeight:Number(r.room_height)||null,
+          typeKey:idPrefix  // groups all instances of this room type for list view
         });
       }
     });
@@ -47782,7 +47884,9 @@ function ssAddPavilion(sc){
     // px,py = position within the 400ft canvas in pixels
     levels: [[],[],[]],
     levelZoom: [1.0, 1.0, 1.0],  // independent zoom per level
-    levelPan:  [[0,0],[0,0],[0,0]] // [panX, panY] per level in px
+    levelPan:  [[0,0],[0,0],[0,0]], // [panX, panY] per level in px
+    levelHeights: [0, 14, 28],   // vertical datum (ft) for each level
+    sectionLine: null            // {x1,y1,x2,y2} in canvas px (unscaled, zoom=1), or null
   });
 }
 
@@ -47865,6 +47969,7 @@ function ssEnsureGroups(){
 
 // Selection state (transient, not persisted)
 var SS_SELECTION = [];  // array of rect ids currently selected
+var SS_PROG_VIEW = "rect";  // "rect" | "list" — toggle between rectangle and list program panel
 
 function ssIsSelected(id){ return SS_SELECTION.indexOf(id)>=0; }
 function ssToggleSelect(id){
@@ -47918,6 +48023,108 @@ function ssDisbandGroup(groupId){
   var pp=document.getElementById("ss-prog-panel");if(pp)buildProgramPanel(pp);
 }
 
+// ── List-view program panel (alternative to rectangle view) ─────────────
+// Shows room TYPES as expandable rows (e.g. "PBL Room (54)"). Expanding
+// reveals individual numbered instances which can be shift-selected and
+// dragged as a group onto a pavilion canvas, packing in a grid on drop.
+var SS_EXPANDED_TYPES = {};  // typeKey -> bool
+
+function buildProgramPanelList(container, scrollWrap, allRects, groupedIds){
+  // Group rects by typeKey (room type), preserving category + program order
+  var byCategory=[], catMap={};
+  allRects.forEach(function(rect){
+    if(groupedIds.has(rect.id)) return;
+    if(!catMap[rect.catName]){catMap[rect.catName]={catName:rect.catName,color:rect.catColor,types:[],typeMap:{}};byCategory.push(catMap[rect.catName]);}
+    var cm=catMap[rect.catName];
+    if(!cm.typeMap[rect.typeKey]){
+      cm.typeMap[rect.typeKey]={typeKey:rect.typeKey,name:rect.name,color:rect.catColor,rects:[]};
+      cm.types.push(cm.typeMap[rect.typeKey]);
+    }
+    cm.typeMap[rect.typeKey].rects.push(rect);
+  });
+
+  byCategory.forEach(function(cat){
+    var catDiv=el("div",{style:"margin-bottom:10px"});
+    catDiv.appendChild(el("div",{style:"font-size:11px;font-weight:800;color:#1F2A44;margin-bottom:4px"},[cat.catName]));
+
+    cat.types.forEach(function(typeGroup){
+      var expanded=!!SS_EXPANDED_TYPES[typeGroup.typeKey];
+      var typeWrap=el("div",{style:"border:1px solid var(--line);border-radius:5px;margin-bottom:4px;overflow:hidden"});
+
+      // Type header row — click to expand/collapse
+      var allAssigned=typeGroup.rects.every(function(r){return ssIsAssigned(r.id);});
+      var someAssigned=typeGroup.rects.some(function(r){return ssIsAssigned(r.id);});
+      var headRow=el("div",{"data-type-header":"1",style:[
+        "display:flex;align-items:center;gap:8px;padding:6px 8px;cursor:pointer",
+        "background:"+(someAssigned?"#f5f5f5":typeGroup.color+"22")
+      ].join(";")});
+      headRow.appendChild(el("span",{style:"font-size:10px;color:#888;width:12px;flex-shrink:0;transition:transform .15s;transform:rotate("+(expanded?"90":"0")+"deg)"},["▶"]));
+      headRow.appendChild(el("div",{style:"width:10px;height:10px;border-radius:2px;background:"+typeGroup.color+";flex-shrink:0;border:1px solid rgba(0,0,0,0.2)"}));
+      headRow.appendChild(el("div",{style:"flex:1;font-size:12px;font-weight:600;color:#1F2A44;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"},[typeGroup.name]));
+      headRow.appendChild(el("span",{style:"font-size:10px;color:#888;font-weight:700"},["("+typeGroup.rects.length+")"]));
+      if(someAssigned){
+        var assignedCount=typeGroup.rects.filter(function(r){return ssIsAssigned(r.id);}).length;
+        headRow.appendChild(el("span",{style:"font-size:9px;color:#1F4D7A;font-weight:700;background:#fff;border:1px solid #1F4D7A44;border-radius:8px;padding:0 6px"},[assignedCount+"/"+typeGroup.rects.length+" placed"]));
+      }
+      headRow.addEventListener("click",function(){
+        SS_EXPANDED_TYPES[typeGroup.typeKey]=!SS_EXPANDED_TYPES[typeGroup.typeKey];
+        var pp=document.getElementById("ss-prog-panel");if(pp)buildProgramPanel(pp);
+      });
+      typeWrap.appendChild(headRow);
+
+      // Expanded: individual instance rows
+      if(expanded){
+        var listBody=el("div",{style:"max-height:260px;overflow-y:auto;border-top:1px solid var(--line)"});
+        typeGroup.rects.forEach(function(rect,idx){
+          var assigned=ssIsAssigned(rect.id);
+          var selected=ssIsSelected(rect.id);
+          var instRow=el("div",{
+            "data-rect-id":rect.id,
+            draggable:assigned?"false":"true",
+            style:[
+              "display:flex;align-items:center;gap:6px;padding:3px 8px 3px 28px;font-size:10.5px",
+              "cursor:"+(assigned?"default":"pointer"),
+              "background:"+(selected?"#1F4D7A18":(idx%2?"#fafafa":"#fff")),
+              "opacity:"+(assigned?"0.4":"1"),
+              "border-left:3px solid "+(selected?"#1F4D7A":"transparent")
+            ].join(";")
+          });
+          instRow.appendChild(el("span",{style:"color:#888;min-width:20px"},["#"+(idx+1)]));
+          instRow.appendChild(el("span",{style:"flex:1;color:#1F2A44;font-family:monospace;font-size:9.5px"},[rect.id]));
+          instRow.appendChild(el("span",{style:"color:#666"},[fmt(rect.nsf)+" SF"]));
+          if(rect.roomHeight) instRow.appendChild(el("span",{style:"color:#999;font-size:9px"},[rect.roomHeight+"'"]));
+          var asgn=ssAssignmentOf(rect.id);
+          if(asgn) instRow.appendChild(el("span",{style:"font-size:8px;font-weight:800;color:#fff;background:#1F4D7A;border-radius:4px;padding:0 4px"},["P"+(asgn.pi+1)]));
+
+          if(!assigned){
+            instRow.addEventListener("click",function(e){
+              e.stopPropagation();
+              ssToggleSelect(rect.id);
+              var pp=document.getElementById("ss-prog-panel");if(pp)buildProgramPanel(pp);
+            });
+            instRow.addEventListener("dragstart",function(e){
+              e.dataTransfer.effectAllowed="move";
+              // If this room is part of the current selection, drag the WHOLE selection as a pack
+              var dragIds=(SS_SELECTION.indexOf(rect.id)>=0 && SS_SELECTION.length>1) ? SS_SELECTION.slice() : [rect.id];
+              var dragRects=dragIds.map(function(id){return allRects.find(function(r){return r.id===id;});}).filter(Boolean);
+              e.dataTransfer.setData("text/plain",JSON.stringify({
+                isMultiPack:true,
+                rects:dragRects.map(function(r){return {id:r.id,name:r.name,catName:r.catName,catColor:r.catColor,gw:r.gw,gh:r.gh,nsf:r.nsf,roomHeight:r.roomHeight};})
+              }));
+              setTimeout(function(){instRow.style.opacity="0.2";},0);
+            });
+            instRow.addEventListener("dragend",function(){instRow.style.opacity="1";});
+          }
+          listBody.appendChild(instRow);
+        });
+        typeWrap.appendChild(listBody);
+      }
+      catDiv.appendChild(typeWrap);
+    });
+    container.appendChild(catDiv);
+  });
+}
+
 // ── Program panel ──────────────────────────────────────────────────────────
 function buildProgramPanel(container){
   // Preserve scroll position before wiping
@@ -47952,6 +48159,18 @@ function buildProgramPanel(container){
   } else {
     toolbar.appendChild(el("span",{style:"font-size:10px;color:#aaa"},["Shift-click or drag to select rooms · then Group selected"]));
   }
+  // View toggle (rect / list)
+  var viewToggle=el("div",{style:"margin-left:auto;display:flex;gap:2px;background:#F1F4F8;border-radius:6px;padding:2px;flex-shrink:0"});
+  ["rect","list"].forEach(function(mode){
+    viewToggle.appendChild(el("button",{
+      style:[
+        "padding:3px 9px;font-size:10px;font-weight:700;border:none;border-radius:4px;cursor:pointer",
+        SS_PROG_VIEW===mode?"background:#1F4D7A;color:#fff":"background:transparent;color:#888"
+      ].join(";"),
+      onclick:function(){SS_PROG_VIEW=mode;var pp=document.getElementById("ss-prog-panel");if(pp)buildProgramPanel(pp);}
+    },[mode==="rect"?"▭ Rects":"☰ List"]));
+  });
+  toolbar.appendChild(viewToggle);
   container.appendChild(toolbar);
 
   // Scrollable content wrapper
@@ -48031,7 +48250,10 @@ function buildProgramPanel(container){
     container.appendChild(el("div",{style:"border-top:1px solid var(--line);margin:8px 0"}));
   }
 
-  // ── Individual rooms by category ──
+  // ── Individual rooms by category — RECT VIEW or LIST VIEW ──
+  if(SS_PROG_VIEW==="list"){
+    buildProgramPanelList(container, scrollWrap, allRects, groupedIds);
+  } else {
   var byCategory=[],catMap={};
   allRects.forEach(function(rect){
     if(groupedIds.has(rect.id)) return;  // hide if in a group
@@ -48088,7 +48310,7 @@ function buildProgramPanel(container){
           e.dataTransfer.effectAllowed="move";
           e.dataTransfer.setData("text/plain",JSON.stringify({
             id:rect.id,name:rect.name,catName:rect.catName,catColor:rect.catColor,
-            pw:rect.pw,ph:rect.ph,gw:rect.gw,gh:rect.gh,nsf:rect.nsf
+            pw:rect.pw,ph:rect.ph,gw:rect.gw,gh:rect.gh,nsf:rect.nsf,roomHeight:rect.roomHeight||null
           }));
           SS._drag=rect;
           setTimeout(function(){rectEl.style.opacity="0.15";},0);
@@ -48101,6 +48323,7 @@ function buildProgramPanel(container){
     div.appendChild(row);
     container.appendChild(div);
   });
+  } // end rect-view branch
 
   // Deselect on background click
   container.addEventListener("click",function(e){
@@ -48116,6 +48339,11 @@ function buildProgramPanel(container){
     var tg=e.target;
     if(tg.getAttribute&&tg.getAttribute("draggable")==="true") return;
     if(tg.tagName==="BUTTON"||tg.tagName==="INPUT"||tg.tagName==="SELECT") return;
+    // Skip list-view type headers (expand/collapse rows) and anything inside them
+    if(tg.closest&&tg.closest("[data-type-header]")) return;
+    // Skip any data-rect-id row (list view instance rows aren't draggable until hovered,
+    // but still need plain clicks to register for selection toggling)
+    if(tg.closest&&tg.closest("[data-rect-id]")&&SS_PROG_VIEW==="list") return;
     var cr=container.getBoundingClientRect();
     dsx=e.clientX-cr.left+container.scrollTop*0;
     dsy=e.clientY-cr.top+container.scrollTop;
@@ -48157,6 +48385,157 @@ function buildProgramPanel(container){
 }
 
 // ── Pavilion panel — three grid-canvas floor plans ──────────────────────────
+// ── Section View: cross-section through all 3 levels at the drawn section line ──
+function buildSectionView(container, pav){
+  var existing=document.getElementById("ss-section-view");
+  if(existing) existing.remove();
+  if(!pav.sectionLine) return;
+
+  var sl=pav.sectionLine;
+  var dx=sl.x2-sl.x1, dy=sl.y2-sl.y1;
+  var lineLenPx=Math.sqrt(dx*dx+dy*dy);
+  if(lineLenPx<2) return;
+  var lineLenFt=lineLenPx/SS_GRID_PX_PER_FT;  // length of the cut line in feet
+  var ux=dx/lineLenPx, uy=dy/lineLenPx;       // unit vector along the line
+
+  // For each level, find rooms whose footprint the section line passes through,
+  // and compute the [start,end] ft range along the line where the room is crossed.
+  var levelData=[0,1,2].map(function(li){
+    var items=pav.levels[li]||[];
+    var hits=[];
+    items.forEach(function(item){
+      var rx1=item.px||0, ry1=item.py||0, rx2=rx1+(item.gw||0), ry2=ry1+(item.gh||0);
+      // Liang-Barsky style clip of the line segment against the room rect
+      var t0=0, t1=1;
+      var p=[-(dx), dx, -(dy), dy];
+      var q=[sl.x1-rx1, rx2-sl.x1, sl.y1-ry1, ry2-sl.y1];
+      var rejected=false;
+      for(var i=0;i<4;i++){
+        if(p[i]===0){ if(q[i]<0){rejected=true;break;} }
+        else {
+          var r=q[i]/p[i];
+          if(p[i]<0){ if(r>t1){rejected=true;break;} if(r>t0)t0=r; }
+          else { if(r<t0){rejected=true;break;} if(r<t1)t1=r; }
+        }
+      }
+      if(!rejected && t0<t1){
+        hits.push({
+          item:item,
+          startFt:(t0*lineLenPx)/SS_GRID_PX_PER_FT,
+          endFt:(t1*lineLenPx)/SS_GRID_PX_PER_FT
+        });
+      }
+    });
+    return hits;
+  });
+
+  var anyHits=levelData.some(function(h){return h.length>0;});
+
+  // Build the section panel
+  var sectionPanel=el("div",{id:"ss-section-view",class:"card",style:"margin-top:14px"});
+  var hdrRow=el("div",{style:"display:flex;align-items:center;gap:8px;margin-bottom:6px"});
+  hdrRow.appendChild(el("h3",{style:"margin:0;font-size:14px"},["Section — "+pav.name]));
+  hdrRow.appendChild(el("div",{style:"font-size:10px;color:#888;flex:1"},
+    ["Cut line length: "+Math.round(lineLenFt)+"′ · Looking in direction of tick marks"]));
+  sectionPanel.appendChild(hdrRow);
+
+  if(!anyHits){
+    sectionPanel.appendChild(el("div",{style:"color:#aaa;font-size:12px;padding:20px;text-align:center"},
+      ["Section line doesn't cross any placed rooms on any level."]));
+    container.parentElement.insertBefore(sectionPanel, container.nextSibling);
+    return;
+  }
+
+  // SVG section drawing: x = position along cut line (ft), y = height (ft, inverted for screen)
+  var svgNS="http://www.w3.org/2000/svg";
+  var pxPerFtX=3.0, pxPerFtY=3.0;  // section drawing scale
+  var maxHeight=50;  // fixed scale so sections are visually comparable across pavilions
+  var svgW=Math.max(200, lineLenFt*pxPerFtX+80);
+  var svgH=maxHeight*pxPerFtY+50;
+
+  var svg=document.createElementNS(svgNS,"svg");
+  svg.setAttribute("width",svgW);svg.setAttribute("height",svgH);
+  svg.style.cssText="background:#fafbfc;border:1px solid var(--line);border-radius:4px;display:block";
+
+  function fx(ft){ return 50+ft*pxPerFtX; }
+  function fy(ft){ return svgH-20-ft*pxPerFtY; }  // invert: 0ft at bottom
+
+  // Ground line
+  var ground=document.createElementNS(svgNS,"line");
+  ground.setAttribute("x1",fx(0));ground.setAttribute("y1",fy(0));
+  ground.setAttribute("x2",fx(lineLenFt));ground.setAttribute("y2",fy(0));
+  ground.setAttribute("stroke","#1F2A44");ground.setAttribute("stroke-width","2");
+  svg.appendChild(ground);
+
+  // Y-axis height ticks (every 5ft)
+  for(var hft=0; hft<=maxHeight; hft+=5){
+    var ty=fy(hft);
+    var tickLine=document.createElementNS(svgNS,"line");
+    tickLine.setAttribute("x1",fx(0)-5);tickLine.setAttribute("y1",ty);
+    tickLine.setAttribute("x2",fx(0));tickLine.setAttribute("y2",ty);
+    tickLine.setAttribute("stroke","#999");tickLine.setAttribute("stroke-width","1");
+    svg.appendChild(tickLine);
+    var tickLbl=document.createElementNS(svgNS,"text");
+    tickLbl.setAttribute("x",fx(0)-8);tickLbl.setAttribute("y",ty+3);
+    tickLbl.setAttribute("font-size","9");tickLbl.setAttribute("fill","#999");tickLbl.setAttribute("text-anchor","end");
+    tickLbl.textContent=hft;
+    svg.appendChild(tickLbl);
+  }
+
+  // Level datum lines + room boxes
+  levelData.forEach(function(hits,li){
+    var lh=(pav.levelHeights||[0,14,28])[li]||0;
+    // Level datum line (dashed, full width)
+    var datumLn=document.createElementNS(svgNS,"line");
+    datumLn.setAttribute("x1",fx(0));datumLn.setAttribute("y1",fy(lh));
+    datumLn.setAttribute("x2",fx(lineLenFt));datumLn.setAttribute("y2",fy(lh));
+    datumLn.setAttribute("stroke","#bbb");datumLn.setAttribute("stroke-width","1");datumLn.setAttribute("stroke-dasharray","3,3");
+    svg.appendChild(datumLn);
+    var datumLbl=document.createElementNS(svgNS,"text");
+    datumLbl.setAttribute("x",fx(lineLenFt)+4);datumLbl.setAttribute("y",fy(lh)+3);
+    datumLbl.setAttribute("font-size","9");datumLbl.setAttribute("fill","#888");datumLbl.setAttribute("font-weight","700");
+    datumLbl.textContent="L"+(li+1)+" @ "+lh+"'";
+    svg.appendChild(datumLbl);
+
+    hits.forEach(function(h){
+      var roomH=h.item.roomHeight||10;
+      var x1=fx(h.startFt), x2=fx(h.endFt);
+      var y1=fy(lh+roomH), y2=fy(lh);
+      var rect=document.createElementNS(svgNS,"rect");
+      rect.setAttribute("x",Math.min(x1,x2));rect.setAttribute("y",y1);
+      rect.setAttribute("width",Math.max(1,Math.abs(x2-x1)));rect.setAttribute("height",Math.max(1,y2-y1));
+      rect.setAttribute("fill",h.item.catColor||"#ccc");
+      rect.setAttribute("stroke","rgba(0,0,0,0.35)");rect.setAttribute("stroke-width","1");
+      var title=document.createElementNS(svgNS,"title");
+      title.textContent=h.item.name+" ("+h.item.id+") — "+roomH+"' tall";
+      rect.appendChild(title);
+      svg.appendChild(rect);
+      // Label if wide enough
+      if(Math.abs(x2-x1)>30){
+        var lbl=document.createElementNS(svgNS,"text");
+        lbl.setAttribute("x",(x1+x2)/2);lbl.setAttribute("y",(y1+y2)/2+3);
+        lbl.setAttribute("font-size","8");lbl.setAttribute("fill","#1F2A44");lbl.setAttribute("text-anchor","middle");
+        lbl.textContent=h.item.id;
+        svg.appendChild(lbl);
+      }
+    });
+  });
+
+  // X-axis length label
+  var xLbl=document.createElementNS(svgNS,"text");
+  xLbl.setAttribute("x",fx(lineLenFt/2));xLbl.setAttribute("y",svgH-4);
+  xLbl.setAttribute("font-size","10");
+  xLbl.setAttribute("fill","#888");xLbl.setAttribute("text-anchor","middle");xLbl.setAttribute("font-weight","700");
+  xLbl.textContent=Math.round(lineLenFt)+"′ section length";
+  svg.appendChild(xLbl);
+
+  var svgWrap=el("div",{style:"overflow-x:auto"});
+  svgWrap.appendChild(svg);
+  sectionPanel.appendChild(svgWrap);
+
+  container.parentElement.insertBefore(sectionPanel, container.nextSibling);
+}
+
 function buildPavilionPanel(container){
   container.innerHTML="";
   var sc=ssScenario();
@@ -48213,6 +48592,25 @@ function buildPavilionPanel(container){
   var legendRow=el("div",{style:"display:flex;align-items:center;gap:8px;margin-bottom:8px"});
   legendRow.appendChild(el("div",{style:"font-size:10px;color:#888;flex:1"},
     ["400′ × 400′ canvas · grid = 50′ · scroll or +/− to zoom each level · hover room for ↻ rotate / × delete · L1 footprint shown dashed on L2 & L3"]));
+  // Section line draw toggle
+  if(!SS._sectionDrawMode) SS._sectionDrawMode=false;
+  legendRow.appendChild(el("button",{
+    title:"Draw a section cut line — appears on all 3 levels. Short tick marks indicate viewing direction.",
+    style:"padding:3px 10px;font-size:11px;border:1px solid "+(SS._sectionDrawMode?"#C0392B":"var(--line2)")+
+          ";background:"+(SS._sectionDrawMode?"#C0392B":"#fff")+";color:"+(SS._sectionDrawMode?"#fff":"#1F2A44")+
+          ";border-radius:4px;cursor:pointer;font-weight:700;white-space:nowrap",
+    onclick:function(){
+      SS._sectionDrawMode=!SS._sectionDrawMode;
+      buildPavilionPanel(container);
+    }
+  },[SS._sectionDrawMode?"✕ Cancel Section":"📐 Draw Section"]));
+  if(pav.sectionLine){
+    legendRow.appendChild(el("button",{
+      title:"Remove the current section line",
+      style:"padding:3px 8px;font-size:11px;border:1px solid #C0392B44;color:#C0392B;background:#fff;border-radius:4px;cursor:pointer",
+      onclick:function(){pav.sectionLine=null;buildPavilionPanel(container);}
+    },["✕ Clear"]));
+  }
   // Sync placed rooms button
   legendRow.appendChild(el("button",{
     title:"Re-read NSF and dimensions for all placed rooms from the current program. Does not move rooms.",
@@ -48229,12 +48627,14 @@ function buildPavilionPanel(container){
               item.nsf=src.nsf; item.catColor=src.catColor;
               item.catName=src.catName; item.name=src.name;
               item.gw=src.gw; item.gh=src.gh;
+              item.roomHeight=src.roomHeight||null;
             }
           });
         });
       });
       var pp=document.getElementById("ss-prog-panel");if(pp)buildProgramPanel(pp);
       buildPavilionPanel(container);
+      buildSectionView(container, pav);
       var sp=document.getElementById("ss-site-panel");if(sp)buildSitePanel(sp);
     }
   },["⟳ Sync to program"]));
@@ -48243,6 +48643,8 @@ function buildPavilionPanel(container){
   // Ensure levelZoom array exists (backwards compat with saved states)
   if(!pav.levelZoom) pav.levelZoom=[1.0,1.0,1.0];
   if(!pav.levelPan)  pav.levelPan=[[0,0],[0,0],[0,0]];
+  if(!pav.levelHeights) pav.levelHeights=[0,14,28];
+  if(pav.sectionLine===undefined) pav.sectionLine=null;
 
   // Compute union bounding box across ALL levels (shown as dashed outline on every level)
   var allLevelItems=[].concat(pav.levels[0],pav.levels[1],pav.levels[2]);
@@ -48388,7 +48790,7 @@ function buildPavilionPanel(container){
         e.dataTransfer.effectAllowed="move";
         e.dataTransfer.setData("text/plain",JSON.stringify({
           id:item.id,name:item.name,catName:item.catName,catColor:item.catColor,
-          gw:item.gw,gh:item.gh,nsf:item.nsf,pw:item.gw,ph:item.gh,
+          gw:item.gw,gh:item.gh,nsf:item.nsf,pw:item.gw,ph:item.gh,roomHeight:item.roomHeight||null,
           fromPavilion:SS.activePavilion,fromLevel:li,
           dragOffX:dragOffX,dragOffY:dragOffY,
           isPavilionMove:true
@@ -48403,10 +48805,83 @@ function buildPavilionPanel(container){
     // Attach scaled inner world to viewport
     canvasWrap.appendChild(innerWorld);
 
+    // ── Section line overlay (drawn on top of innerWorld, fixed to viewport not world) ──
+    var sectionSvg=document.createElementNS(svgNS,"svg");
+    sectionSvg.setAttribute("width",SS_CANVAS_PX);sectionSvg.setAttribute("height",SS_CANVAS_PX);
+    sectionSvg.style.cssText="position:absolute;top:0;left:0;pointer-events:none;z-index:15";
+    canvasWrap.appendChild(sectionSvg);
+
+    function drawSectionLine(){
+      sectionSvg.innerHTML="";
+      if(!pav.sectionLine) return;
+      var sl=pav.sectionLine;
+      // Convert canvas-space (unscaled) coords to this level's display px (apply zoom + pan)
+      var x1=sl.x1*lz+pav.levelPan[li][0], y1=sl.y1*lz+pav.levelPan[li][1];
+      var x2=sl.x2*lz+pav.levelPan[li][0], y2=sl.y2*lz+pav.levelPan[li][1];
+      var ln=document.createElementNS(svgNS,"line");
+      ln.setAttribute("x1",x1);ln.setAttribute("y1",y1);ln.setAttribute("x2",x2);ln.setAttribute("y2",y2);
+      ln.setAttribute("stroke","#C0392B");ln.setAttribute("stroke-width","2.5");ln.setAttribute("stroke-dasharray","8,4");
+      sectionSvg.appendChild(ln);
+      // Direction tick marks (perpendicular short lines at each end, on the "viewing" side)
+      var dx=x2-x1, dy=y2-y1, len=Math.sqrt(dx*dx+dy*dy)||1;
+      var ux=dx/len, uy=dy/len;       // unit vector along line
+      var px=-uy, py=ux;              // perpendicular unit vector (viewing direction)
+      var tickLen=10;
+      [[x1,y1],[x2,y2]].forEach(function(pt){
+        var tk=document.createElementNS(svgNS,"line");
+        tk.setAttribute("x1",pt[0]);tk.setAttribute("y1",pt[1]);
+        tk.setAttribute("x2",pt[0]+px*tickLen);tk.setAttribute("y2",pt[1]+py*tickLen);
+        tk.setAttribute("stroke","#C0392B");tk.setAttribute("stroke-width","2.5");
+        sectionSvg.appendChild(tk);
+      });
+      // Endpoint dots
+      [[x1,y1],[x2,y2]].forEach(function(pt){
+        var dot=document.createElementNS(svgNS,"circle");
+        dot.setAttribute("cx",pt[0]);dot.setAttribute("cy",pt[1]);dot.setAttribute("r","3.5");
+        dot.setAttribute("fill","#C0392B");
+        sectionSvg.appendChild(dot);
+      });
+    }
+    drawSectionLine();
+
+    // ── Section line drawing (active only when SS._sectionDrawMode is true) ──
+    var sectionDrawing=false, sdStartX=0, sdStartY=0;
+    canvasWrap.addEventListener("mousedown",function(e){
+      if(!SS._sectionDrawMode) return;
+      var cr=canvasWrap.getBoundingClientRect();
+      sdStartX=(e.clientX-cr.left-pav.levelPan[li][0])/lz;
+      sdStartY=(e.clientY-cr.top-pav.levelPan[li][1])/lz;
+      sectionDrawing=true;
+      e.preventDefault();e.stopPropagation();
+    });
+    document.addEventListener("mousemove",function(e){
+      if(!sectionDrawing) return;
+      var cr=canvasWrap.getBoundingClientRect();
+      var rawX=(e.clientX-cr.left-pav.levelPan[li][0])/lz;
+      var rawY=(e.clientY-cr.top-pav.levelPan[li][1])/lz;
+      // Snap to nearest 45° increment around the start point
+      var ddx=rawX-sdStartX, ddy=rawY-sdStartY;
+      var dist=Math.sqrt(ddx*ddx+ddy*ddy);
+      var angle=Math.atan2(ddy,ddx);
+      var snapAngle=Math.round(angle/(Math.PI/4))*(Math.PI/4);
+      var curX=sdStartX+Math.cos(snapAngle)*dist;
+      var curY=sdStartY+Math.sin(snapAngle)*dist;
+      pav.sectionLine={x1:sdStartX,y1:sdStartY,x2:curX,y2:curY};
+      drawSectionLine();
+    });
+    document.addEventListener("mouseup",function(){
+      if(!sectionDrawing) return;
+      sectionDrawing=false;
+      SS._sectionDrawMode=false;
+      buildPavilionPanel(container);
+      buildSectionView(container,pav);
+    });
+
     // ── Zoom controls (scroll + buttons) ──
     // ── Pan within canvas (mousedown+drag on background) ──
     var canvasPanning=false,cpsx=0,cpsy=0,cpox=0,cpoy=0;
     canvasWrap.addEventListener("mousedown",function(e){
+      if(SS._sectionDrawMode) return;  // section drawing takes priority
       // Only pan when clicking on the canvas background (not a room rect)
       if(e.target!==canvasWrap&&e.target!==innerWorld&&e.target.tagName!=="svg"&&e.target.tagName!=="line"&&e.target.tagName!=="rect"&&e.target.tagName!=="text") return;
       canvasPanning=true;cpsx=e.clientX;cpsy=e.clientY;
@@ -48423,7 +48898,7 @@ function buildPavilionPanel(container){
       innerWorld.style.left=pav.levelPan[li][0]+"px";
       innerWorld.style.top=pav.levelPan[li][1]+"px";
     });
-    document.addEventListener("mouseup",function(){if(canvasPanning){canvasPanning=false;canvasWrap.style.cursor="crosshair";} });
+    document.addEventListener("mouseup",function(){if(canvasPanning){canvasPanning=false;canvasWrap.style.cursor=SS._sectionDrawMode?"copy":"crosshair";} });
     canvasWrap.style.cursor="crosshair";
     canvasWrap.addEventListener("wheel",function(e){
       e.preventDefault();e.stopPropagation();
@@ -48448,14 +48923,30 @@ function buildPavilionPanel(container){
       canvasWrap.style.background="#fff";
       var raw=e.dataTransfer.getData("text/plain"),data;
       try{data=JSON.parse(raw);}catch(ex){return;}
-      if(!data||!data.id) return;
+      if(!data||(!data.id&&!data.isMultiPack)) return;
       // Determine drop position within canvas (divide display px by zoom → canvas coords)
       var cRect=canvasWrap.getBoundingClientRect();
       var worldSz=SS_GRID_FT*SS_GRID_PX_PER_FT;
       var dropX=Math.max(0,Math.min(worldSz-(data.gw||20),Math.round((e.clientX-cRect.left)/lz)));
       var dropY=Math.max(0,Math.min(worldSz-(data.gh||20),Math.round((e.clientY-cRect.top)/lz)));
 
-      if(data.isGroup && data.groupRects){
+      if(data.isMultiPack && data.rects){
+        // Pack up to 25 rooms in a simple left-to-right, top-to-bottom grid from the drop point
+        var packRects=data.rects.filter(function(r){return !ssIsAssigned(r.id);}).slice(0,25);
+        var px0=dropX, py0=dropY, rowH=0, maxRowW=Math.min(worldSz*0.6, 600);
+        packRects.forEach(function(r){
+          if(px0-dropX+r.gw>maxRowW){ px0=dropX; py0+=rowH+4; rowH=0; }
+          var fx=Math.max(0,Math.min(worldSz-r.gw,px0));
+          var fy=Math.max(0,Math.min(worldSz-r.gh,py0));
+          items.push({
+            id:r.id,name:r.name,catName:r.catName,catColor:r.catColor,
+            nsf:r.nsf,gw:r.gw,gh:r.gh,roomHeight:r.roomHeight||null,
+            px:fx,py:fy
+          });
+          if(r.gh>rowH)rowH=r.gh;
+          px0+=r.gw+3;
+        });
+      } else if(data.isGroup && data.groupRects){
         // Drop an entire group — place each rect with small offsets from drop point
         var grp=ssEnsureGroups().find(function(g){return g.id===data.id;});
         if(!grp) return;
@@ -48499,7 +48990,7 @@ function buildPavilionPanel(container){
         if(ssIsAssigned(data.id)) return;
         items.push({
           id:data.id,name:data.name,catName:data.catName,catColor:data.catColor,
-          nsf:data.nsf,gw:data.gw||20,gh:data.gh||20,px:dropX,py:dropY
+          nsf:data.nsf,gw:data.gw||20,gh:data.gh||20,px:dropX,py:dropY,roomHeight:data.roomHeight||null
         });
       }
       var pp=document.getElementById("ss-prog-panel");if(pp)buildProgramPanel(pp);
@@ -48531,6 +49022,19 @@ function buildPavilionPanel(container){
     zoomBar.appendChild(el("span",{style:"font-size:10px;min-width:32px;text-align:center;color:#666"},[Math.round((pav.levelZoom[li]||1)*100)+"%"]));
     zoomBar.appendChild(makeZBtn("+",0.25));
     fRow.appendChild(zoomBar);
+    // Level height editable field
+    var htWrap=el("span",{style:"display:flex;align-items:center;gap:3px;font-size:10px;color:#666"});
+    htWrap.appendChild(el("span",null,["HT"]));
+    var htInp=el("input",{type:"text",value:String(pav.levelHeights[li]||0),
+      style:"width:38px;font-size:10px;border:1px solid #ccd2dc;border-radius:3px;padding:1px 3px;text-align:center"});
+    htInp.addEventListener("change",function(){
+      var v=parseFloat(htInp.value.replace(/[^0-9.\-]/g,""));
+      pav.levelHeights[li]=isNaN(v)?0:v;
+      buildSectionView(container,pav);
+    });
+    htWrap.appendChild(htInp);
+    htWrap.appendChild(el("span",null,["'"]));
+    fRow.appendChild(htWrap);
     fRow.appendChild(el("span",{style:"font-size:10px;color:#666"},[items.length+" spaces"]));
     footer.appendChild(fRow);
     if(lvlNSF>0){
@@ -48546,6 +49050,7 @@ function buildPavilionPanel(container){
   });
 
   container.appendChild(levelsRow);
+  buildSectionView(container, pav);
 }
 
 // ── Site map panel ──────────────────────────────────────────────────────────
